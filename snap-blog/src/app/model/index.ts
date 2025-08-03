@@ -1,1 +1,4 @@
 export * from "./user.model"
+export * from "./comment.model"
+export * from "./group.model"
+export * from "./post.model"
