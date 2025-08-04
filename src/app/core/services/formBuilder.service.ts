@@ -30,7 +30,6 @@ export class FormBuilderService {
               ),
             ],
           ],
-          phone: [''],
           passwords: this.formBuilder.group(
             {
               password: [
@@ -77,7 +76,6 @@ export class FormBuilderService {
               ),
             ],
           ],
-          phone: [''],
         });
         break;
 
@@ -96,9 +94,6 @@ export class FormBuilderService {
     return form.get('email');
   }
 
-  getPhoneControl(form: FormGroup) {
-    return form.get('phone');
-  }
 
   getPasswordsGroup(form: FormGroup) {
     return form.get('passwords') as FormGroup;
@@ -224,16 +219,29 @@ export class FormBuilderService {
   }
 
   getRegisterFormValue(form: FormGroup) {
-    const { username, email, phone } = form.value;
+    const { username, email } = form.value;
     const { password, rePassword } = form.value.passwords;
 
     return {
       username,
       email,
-      phone,
       password,
       rePassword,
     };
+  }
+
+   markFormGroupTouched(form: FormGroup): void {
+    Object.keys(form.controls).forEach(key => {
+      const control = form.get(key);
+      if (control instanceof FormGroup) {
+        Object.keys(control.controls).forEach(nestedKey => {
+          const nestedControl = control.get(nestedKey)
+          nestedControl?.markAllAsTouched();
+        })
+      } else {
+        control?.markAsTouched();
+      }
+    })
   }
 
   private passwordMatchValidator(
