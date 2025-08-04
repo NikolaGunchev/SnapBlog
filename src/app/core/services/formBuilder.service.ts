@@ -26,7 +26,7 @@ export class FormBuilderService {
             [
               Validators.required,
               Validators.pattern(
-                /^(?=.{6,})[a-zA-Z][a-zA-Z0-9._-]*@gmail\.(com|bg)$/
+                /^[a-zA-Z0-9_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
               ),
             ],
           ],
@@ -56,7 +56,7 @@ export class FormBuilderService {
             [
               Validators.required,
               Validators.pattern(
-                /^(?=.{6,})[a-zA-Z][a-zA-Z0-9._-]*@gmail\.(com|bg)$/
+                /^[a-zA-Z0-9_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
               ),
             ],
           ],
@@ -73,7 +73,7 @@ export class FormBuilderService {
             [
               Validators.required,
               Validators.pattern(
-                /^(?=.{6,})[a-zA-Z][a-zA-Z0-9._-]*@gmail\.(com|bg)$/
+                /^[a-zA-Z0-9_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
               ),
             ],
           ],

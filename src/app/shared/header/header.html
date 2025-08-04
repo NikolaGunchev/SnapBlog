@@ -1,7 +1,7 @@
     <header class="bg-[#fff8ea] py-2 px-6 shadow-md border-b-2 border-[#fff4e1]">
         <div class="mx-auto flex justify-between items-center space-x-4">
             <div class="flex-shrink-0">
-                <img src="logo.png" alt="logo" class="h-8 rounded-lg">
+                <a routerLink=""><img src="logo.png" alt="logo" class="h-8 rounded-lg"></a>
             </div>
     
             <div class="search-field flex-grow flex items-center justify-center max-w-xl min-w-[150px] sm:min-w-[200px] md:min-w-[300px] relative">
@@ -16,17 +16,17 @@
     
              @if (!isLogged()) {
                <div class="auth-buttons flex items-center space-x-2 flex-shrink-0">
-                   <a href="#" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
+                   <a routerLink="/register" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
                        Sign Up
                    </a>
-                   <a href="#" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
+                   <a routerLink="/login" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
                        Login
                    </a>
                </div>
              } @else {
                <div class="flex items-center space-x-4 flex-shrink-0">
                    <p class="text-gray-700 font-medium whitespace-nowrap">Welcome back, {{ currentUser()?.username }}</p>
-                   <a href="#" class="bg-[#76a7a4] text-white font-medium py-1.5 px-4 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
+                   <a (click)="logout()" class="bg-[#76a7a4] text-white font-medium py-1.5 px-4 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
                        Logout
                    </a>
                </div>
