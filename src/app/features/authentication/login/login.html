@@ -7,26 +7,28 @@
       <div class="field">
         <label for="email" class="text-[#3d3a33]">Email</label>
         <input
+          [class.border-red]="isEmailInvalid"
           type="email"
           id="email"
           class="block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
           formControlName="email"
         />
       </div>
-      @if (isEmailValid) {
+      @if (isEmailInvalid) {
       <p class="text-[#FF0000]">{{emailErrorMessage}}</p>
       }
 
       <div class="filed">
         <label for="password" class="text-[#3d3a33]">Password</label>
         <input
+          [class.border-red]="isPasswordInvalid"
           type="password"
           id="password"
           class="block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
           formControlName="password"
         />
       </div>
-      @if(isPasswordValid){
+      @if(isPasswordInvalid){
       <p class="text-[#FF0000]">{{passwordErrorMessage}}</p>
       }
 
