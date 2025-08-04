@@ -30,6 +30,13 @@ export class AuthenticationService {
   public currentUser = this._currentUser.asReadonly();
   public currentUser2: Signal<FirebaseUser | null> = this.firebaseUser;
 
+  constructor(){
+    const savedUser=localStorage.getItem('currentUser')
+    if (savedUser) {
+      this._isLogged.set(true)
+    }
+  }
+
   register(
     email: string,
     password: string,
@@ -46,9 +53,9 @@ export class AuthenticationService {
           email: email,
           username: username,
           created_at: new Date(),
-          groups: undefined,
-          posts: undefined,
-          comments: undefined,
+          groups: [],
+          posts: [],
+          comments: [],
         };
 
         const userDocRef = doc(this.firestore, `users/${uid}`);
