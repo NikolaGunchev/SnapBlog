@@ -1,6 +1,12 @@
-
+:root{
+  --main-background-color:#fbf7ee
+}
 
 body {
   font-family: "Inter", sans-serif;
-  background-color: #fff8ea;
+  background-color: var(--main-background-color);
+}
+
+.main-background-color{
+  background-color: var(--main-background-color);
 }

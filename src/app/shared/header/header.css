@@ -1,9 +1,9 @@
 .search-field:focus-within svg {
-  color: #1e3a8a;
+  color: #5E8F8C;
 }
 .search-field input:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(118, 167, 164, 0.4);
+  border-color: #76A7A4;
 }
 
 .auth-buttons a:hover {
