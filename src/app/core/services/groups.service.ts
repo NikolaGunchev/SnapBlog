@@ -25,16 +25,22 @@ export class GroupsService{
     return collectionData(filterd, {idField: 'id'}) as Observable<Group[]>
   }
 
-  getGroupById(groupId:string):Observable<Group>{
-    const groupDocRef:DocumentReference<Group> = doc(this.firestore, 'groups', groupId) as DocumentReference<Group>;
+   getGroupById(groupId: string): Observable<Group | undefined> {
+    const trimmedGroupId = groupId.trim();
+    
+    const groupDocRef = doc(this.firestore, 'groups', trimmedGroupId) as DocumentReference<Group>;
 
-    return docData(groupDocRef).pipe(
-      map(groupData=>{
-        return {
-          id: groupDocRef.id,
-          ...groupData
-        } as Group;
+    return docData<Group>(groupDocRef).pipe(
+      map(groupData => {
+        if (groupData) {
+          return {
+            ...groupData,
+            id: groupDocRef.id
+          };
+        } else {
+          return undefined;
+        }
       })
-    ) as Observable<Group>
+    );
   }
 }

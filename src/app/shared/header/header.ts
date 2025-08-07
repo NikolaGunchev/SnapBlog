@@ -9,7 +9,7 @@ import { UserService } from '../../core/services/userProfile.service';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header implements AfterViewInit {
+export class Header {
 
   private authService = inject(AuthenticationService);
   private userService=inject(UserService)
@@ -17,12 +17,6 @@ export class Header implements AfterViewInit {
   
   readonly isLogged = this.authService.isLoggedIn;
   readonly currentUser = this.userService.userProfile
-  
-
-  
-    ngAfterViewInit(): void {
-    console.log(this.currentUser()?.username);
-  }
 
   logout() {
     this.authService.logout().subscribe({

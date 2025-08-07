@@ -13,11 +13,15 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
 })
 export class PostItem implements OnInit {
   private groupService=inject(GroupsService)
-  groupDetail$!:Observable<Group>
+  groupDetail$!:Observable<Group | undefined>
 
   @Input() post!:Post
 
   ngOnInit(): void {
     this.groupDetail$=this.groupService.getGroupById(this.post.groupId);
+    console.log(this.post.groupId);
+    
+  
+    
   }
 }
