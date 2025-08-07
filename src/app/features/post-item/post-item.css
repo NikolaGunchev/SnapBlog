@@ -1,5 +1,7 @@
 .img-holder{
-  width: 3rem;
+  width: 1.5rem;
+
+  border-radius: 50%;
   aspect-ratio: 1;
   background-color: red;
 }
