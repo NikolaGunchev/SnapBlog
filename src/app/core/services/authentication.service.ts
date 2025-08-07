@@ -57,8 +57,7 @@ export class AuthenticationService {
 
   login(email: string, password: string): Observable<UserCredential> {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-      tap((userCredential) => {
-        console.log(userCredential);
+      tap(() => {
         console.log('User logged in successfully.');
       })
     );
