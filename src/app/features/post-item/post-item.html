@@ -1,0 +1,21 @@
+<article class="px-1">
+  <div class="article-header">
+    <div class="info-container">
+      <div class="group-info flex gap-1">
+        @if (groupDetail$ | async; as group) {
+          <div class="img-holder"></div>
+          <p class="text-xs">{{ group.name }}</p>
+        }
+      </div>
+      <span>-</span>
+      <div class="time text-xs text-gray">{{post.created_at | timeAgo}}</div>
+    </div>
+  </div>
+  <div class="title">
+    <h3>{{post.title}}</h3>
+  </div>
+  <div class="post-content">{{post.content}}</div>
+  <div class="post-buttons">
+    
+  </div>
+</article>

@@ -1,11 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { PostsService } from '../../core/services';
+import { Post } from '../../model';
+import { Observable } from 'rxjs';
+import { PostItem } from '../post-item/post-item';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [PostItem, CommonModule],
   templateUrl: './home.html',
-  styleUrl: './home.css'
+  styleUrl: './home.css',
 })
-export class Home {
+export class Home implements OnInit {
+  private postService = inject(PostsService);
+   posts$!: Observable<Post[]>;
 
+  ngOnInit(): void {
+    this.posts$ = this.postService.getPosts();
+  }
 }

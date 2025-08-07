@@ -1,21 +1,9 @@
 <div class="container mx-auto px-4 max-w-[1150px] grid grid-cols-1 lg:grid-cols-12 gap-6">
-  
+
   <div class="post-cotnainer col-span-12 lg:col-span-8">
-    <div>
-      <p>author</p>
-      <p>title</p>
-      <p>content</p>
-    </div>
-    <div>
-      <p>author</p>
-      <p>title</p>
-      <p>content</p>
-    </div>
-    <div>
-      <p>author</p>
-      <p>title</p>
-      <p>content</p>
-    </div>
+    @for (post of posts$ | async; track $index) {
+      <app-post-item [post]="post"></app-post-item>
+    }
   </div>
   <div class="side-content col-span-12 lg:col-span-4">
     <div>
