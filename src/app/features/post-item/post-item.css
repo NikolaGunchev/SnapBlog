@@ -5,3 +5,25 @@
   aspect-ratio: 1;
   background-color: red;
 }
+
+article:hover{
+background-color: #76a7a414;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.likes-icon{
+  width: 2.3rem;
+   
+  &:hover{
+    cursor: pointer;
+    background-color: #4d6c6a1a;
+  }
+
+  &.like:hover path{
+    stroke:rgba(90, 190, 90, 0.837)
+  }
+  &.dislike:hover path{
+    stroke:rgba(255, 136, 136, 0.718)
+  }
+}

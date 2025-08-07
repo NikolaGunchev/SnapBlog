@@ -18,10 +18,6 @@ export class PostItem implements OnInit {
   @Input() post!:Post
 
   ngOnInit(): void {
-    this.groupDetail$=this.groupService.getGroupById(this.post.groupId);
-    console.log(this.post.groupId);
-    
-  
-    
+    this.groupDetail$=this.groupService.getGroupById(this.post.groupId);    
   }
 }
