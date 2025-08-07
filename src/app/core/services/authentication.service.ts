@@ -1,4 +1,4 @@
-import { inject, Injectable, Signal, signal } from '@angular/core';
+import { computed, inject, Injectable, Signal } from '@angular/core';
 import {
   Auth,
   user,
@@ -10,8 +10,7 @@ import {
 } from '@angular/fire/auth';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { from, Observable, tap } from 'rxjs';
-import { doc, docData, Firestore, setDoc } from '@angular/fire/firestore';
-import { User } from '../../model';
+import { doc, Firestore, serverTimestamp, setDoc } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -23,19 +22,9 @@ export class AuthenticationService {
   private firebaseUser = toSignal<FirebaseUser | null>(user(this.auth), {
     initialValue: null,
   });
-  private _isLogged = signal<boolean>(false);
-  private _currentUser = signal<User | null>(null);
 
-  public isLogged = this._isLogged.asReadonly();
-  public currentUser = this._currentUser.asReadonly();
-  public currentUser2: Signal<FirebaseUser | null> = this.firebaseUser;
-
-  constructor(){
-    const savedUser=localStorage.getItem('currentUser')
-    if (savedUser) {
-      this._isLogged.set(true)
-    }
-  }
+  public currentUser: Signal<FirebaseUser | null> =this.firebaseUser
+  public isLoggedIn:Signal<boolean>=computed(()=> !!this.currentUser())
 
   register(
     email: string,
@@ -52,7 +41,7 @@ export class AuthenticationService {
           id: uid,
           email: email,
           username: username,
-          created_at: new Date(),
+          created_at: serverTimestamp(),
           groups: [],
           posts: [],
           comments: [],
@@ -61,20 +50,16 @@ export class AuthenticationService {
         const userDocRef = doc(this.firestore, `users/${uid}`);
         setDoc(userDocRef, user);
 
-        
-        this._currentUser.set(user);
-        this._isLogged.set(true);
-        localStorage.setItem('currentUser', JSON.stringify(user));
+        console.log('User registered and profile created in Firestore!');
       })
     );
   }
 
   login(email: string, password: string): Observable<UserCredential> {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-      tap(() => {
-        this.setUserData();
-        this._isLogged.set(true);
-        localStorage.setItem('currentUser',JSON.stringify(this._currentUser()?.username));
+      tap((userCredential) => {
+        console.log(userCredential);
+        console.log('User logged in successfully.');
       })
     );
   }
@@ -82,18 +67,8 @@ export class AuthenticationService {
   logout(): Observable<void> {
     return from(signOut(this.auth)).pipe(
       tap(() => {
-        localStorage.removeItem('currentUser');
-        this._isLogged.set(false)
-        this._currentUser.set(null)
+        console.log("User logged out successfully.");
       })
     );
-  }
-
-  setUserData(){
-    const userDocRef=doc(this.firestore, `users/${this.firebaseUser()?.uid}`)
-
-    docData(userDocRef).subscribe(profile => {
-      this._currentUser.set(profile as User)
-    });
   }
 }

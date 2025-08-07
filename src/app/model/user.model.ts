@@ -7,7 +7,7 @@ export interface User{
   email:string,
   username:string,
   created_at:Date,
-  groups:Group[] | undefined,
-  posts:Post[] | undefined,
-  comments:Comment[] | undefined
+  groups:string[] | undefined,
+  posts:string[] | undefined,
+  comments:string[] | undefined
 }

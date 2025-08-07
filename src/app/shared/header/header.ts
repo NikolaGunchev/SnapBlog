@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import { AuthenticationService } from '../../core/services';
 import { Router, RouterLink } from '@angular/router';
+import { UserService } from '../../core/services/userProfile.service';
 
 @Component({
   selector: 'app-header',
@@ -8,12 +9,20 @@ import { Router, RouterLink } from '@angular/router';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header {
-  private authService = inject(AuthenticationService);
-  private router = inject(Router);
+export class Header implements AfterViewInit {
 
-  readonly isLogged = this.authService.isLogged;
-  readonly currentUser = this.authService.currentUser;
+  private authService = inject(AuthenticationService);
+  private userService=inject(UserService)
+  private router = inject(Router);
+  
+  readonly isLogged = this.authService.isLoggedIn;
+  readonly currentUser = this.userService.userProfile
+  
+
+  
+    ngAfterViewInit(): void {
+    console.log(this.currentUser()?.username);
+  }
 
   logout() {
     this.authService.logout().subscribe({
