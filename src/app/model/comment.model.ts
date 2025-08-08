@@ -1,9 +1,8 @@
-import { User } from "./user.model";
-
 export interface Comment{
   id:string,
   likes:number,
   text:string,
-  userId:User,
+  creatorId:string,
+  creatorName:string,
   created_at:Date
 }
