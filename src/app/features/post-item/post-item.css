@@ -17,8 +17,10 @@ article {
     content: "";
     display: block;
     position: absolute;
+    padding: 0;
     width: 100%;
     height: 2px;
+    left: 0;
     bottom: -0.7rem;
     background-color: #4d6c6a1a;
   }
