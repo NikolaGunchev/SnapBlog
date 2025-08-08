@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { PostItem } from '../post-item/post-item';
 import { CommonModule } from '@angular/common';
 import { Dropdown } from '../../shared/dropdown/dropdown';
-import { SideGroup } from '../../shared/side-group/side-group';
+import { SideGroup } from '../side-group/side-group';
 import { Footer } from '../../shared/footer/footer';
 
 @Component({
