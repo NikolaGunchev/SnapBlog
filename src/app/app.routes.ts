@@ -1,10 +1,12 @@
 import { Routes } from '@angular/router';
 import { NotFound } from './shared/not-found/not-found';
+import { PostDetails } from './features/post-details/post-details';
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./features/home/home').then(c=>c.Home),
+    // loadComponent: () => import('./features/home/home').then(c=>c.Home),
+    component: PostDetails
   },
   {
     path: 'login',
