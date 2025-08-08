@@ -3,7 +3,8 @@ export interface Group {
   name: string;
   creatorId: string;
   description: string;
-  memberCount: string[];
+  members: string[];
+  memberCount: number
   rules: string[];
   tags: string[];
   created_at: Date;

@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { collection, collectionData, CollectionReference, doc, docData, DocumentReference, Firestore, query, where } from "@angular/fire/firestore";
+import { collection, collectionData, CollectionReference, doc, docData, DocumentReference, Firestore, orderBy, query, where, limit } from "@angular/fire/firestore";
 import { map, Observable, take } from "rxjs";
 import { Group } from "../../model";
 
@@ -18,6 +18,18 @@ export class GroupsService{
     return collectionData<Group>(this.groupsCollection as CollectionReference<Group>, {idField: 'id'}).pipe(
       take(1)
     );
+  }
+
+  getTopFiveGroups():Observable<Group[]>{
+    const filtered=query(
+      this.groupsCollection,
+      orderBy('memberCount', 'desc'),
+      limit(5)
+    )
+
+    return collectionData<Group>(filtered as CollectionReference<Group>, {idField: 'id'}).pipe(
+      take(1)
+    ) as Observable<Group[]>
   }
 
   getGroupsByUser(userId: string):Observable<Group[]>{

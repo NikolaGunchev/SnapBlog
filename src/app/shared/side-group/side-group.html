@@ -1,0 +1,14 @@
+<div class="container px-3 py-2 bg-[#f6edd9]">
+  <h5 class="mb-5">POPULAR GROUPS</h5>
+  <div class="groups-container rounded-lg p-3">
+    @for (group of topFiveGroups$ | async; track $index) {
+      <div class="group flex gap-3 content-center">
+        <div class="image-holder self-center"></div>
+        <div class="name">
+          <p class="text-sm">{{group.name}}</p>
+          <p class="text-xs text-gray-500">{{group.memberCount}} members</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>
