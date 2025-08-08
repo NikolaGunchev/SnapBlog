@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { NotFound } from './shared/not-found/not-found';
 
 export const routes: Routes = [
   {
@@ -12,5 +13,9 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./features/authentication/register/register').then(c=>c.Register),
+  },
+  {
+    path: '**',
+    component: NotFound
   }
 ];
