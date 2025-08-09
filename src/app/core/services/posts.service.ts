@@ -1,7 +1,8 @@
 import { inject, Injectable } from "@angular/core";
-import { collection, collectionData, CollectionReference, Firestore, query, where } from "@angular/fire/firestore";
-import { Observable, take } from "rxjs";
+import { collection, collectionData, CollectionReference, Firestore, query, where,doc, docData  } from "@angular/fire/firestore";
+import { map, Observable, take } from "rxjs";
 import { Post } from "../../model";
+import { postConverter } from "./firestoreConverter.service";
 
 @Injectable({
   providedIn: 'root'
@@ -29,4 +30,20 @@ export class PostsService{
     const filtered=query(this.postsCollection, where('groupID','==',groupId));
     return collectionData(filtered, {idField: 'id'}) as Observable<Post[]>
   }
+
+  getPostById(postId: string): Observable<Post | undefined> {
+  const trimmedPostId = postId.trim();
+  
+  const postDocRef = doc(this.firestore, 'groups', trimmedPostId).withConverter(postConverter);
+
+  return docData(postDocRef).pipe(
+    map(postData => {
+      if (postData) {
+        return postData;
+      } else {
+        return undefined;
+      }
+    })
+  );
+}
 }

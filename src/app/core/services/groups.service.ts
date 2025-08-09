@@ -54,5 +54,18 @@ getGroupById(groupId: string): Observable<Group | undefined> {
   );
 }
 
-  
+getGroupByName(name: string): Observable<Group | undefined> {
+  const trimmedName = name.trim();
+
+  const filtered = query(
+    this.groupsCollection,
+    where('name', '==', trimmedName),
+    limit(1)
+  );
+
+  return collectionData<Group>(filtered as CollectionReference<Group>, { idField: 'id' }).pipe(
+    map(groups => groups.length ? groups[0] : undefined),
+    take(1)
+  ) as Observable<Group | undefined>;
+}
 }
