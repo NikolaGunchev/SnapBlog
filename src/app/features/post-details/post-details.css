@@ -1,6 +1,5 @@
 
-
-article {
+.post-buttons {
 
   &::after{
     content: "";
@@ -16,26 +15,16 @@ article {
 }
 
 .likes-icon {
-  width: 2.1rem;
-
-  &:hover {
-    cursor: pointer;
-    background-color: #4d6c6a1a;
-  }
 
   &.like:hover path {
-    stroke: rgba(90, 190, 90, 0.837);
+    stroke: #5abe5ad5;
   }
   &.dislike:hover path {
-    stroke: rgba(255, 136, 136, 0.718);
+    stroke: #ff8888b7;
   }
 }
 
-.comment-button {
-  width: 2.2rem;
-
-  &:hover {
-    background-color: #648d8a3b;
-    cursor: pointer;
-  }
+.comment-field input:focus {
+  box-shadow: 0 0 0 3px rgba(118, 167, 164, 0.4);
+  border-color: #76A7A4;
 }

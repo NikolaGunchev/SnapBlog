@@ -7,4 +7,5 @@ export interface Post{
   content:string,
   created_at:Date
   images:string[]
+  commentsCount:number
 }
