@@ -1,12 +1,15 @@
-import { effect, inject, Injectable, signal } from "@angular/core";
-import { doc, docData, Firestore } from "@angular/fire/firestore";
-import { AuthenticationService } from "./authentication.service";
-import { User } from "../../model";
+import { effect, inject, Injectable, signal } from '@angular/core';
+import { doc, docData, Firestore } from '@angular/fire/firestore';
+import { AuthenticationService } from './authentication.service';
+import { User } from '../../model';
+import { map, Observable } from 'rxjs';
+import { DocumentReference } from '@angular/fire/compat/firestore';
+import { userConverter } from './firestoreConverter.service';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root',
 })
-export class UserService{
+export class UserService {
   private firestore = inject(Firestore);
   private authService = inject(AuthenticationService);
 
@@ -20,10 +23,9 @@ export class UserService{
 
       if (firebaseUser) {
         const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-        
-        docData(userDocRef).subscribe(profile => {
-          if (profile) {
 
+        docData(userDocRef).subscribe((profile) => {
+          if (profile) {
             const userModel: User = {
               id: firebaseUser.uid,
               email: firebaseUser.email || '',
@@ -38,10 +40,29 @@ export class UserService{
             this._userProfile.set(null);
           }
         });
-
       } else {
         this._userProfile.set(null);
       }
     });
+  }
+
+  getUserById(userId: string): Observable<User | undefined> {
+    const trimmedUserId = userId.trim();
+
+    const userDocRef = doc(
+      this.firestore,
+      'users',
+      trimmedUserId
+    ).withConverter(userConverter);
+
+    return docData(userDocRef).pipe(
+      map((userData) => {
+        if (userData) {
+          return userData;
+        } else {
+          return undefined;
+        }
+      })
+    );
   }
 }
