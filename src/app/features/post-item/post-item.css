@@ -20,12 +20,7 @@ article {
 }
 
 .likes-icon {
-  width: 2.1rem;
 
-  &:hover {
-    cursor: pointer;
-    background-color: #4d6c6a1a;
-  }
 
   &.like:hover path {
     stroke: rgba(90, 190, 90, 0.837);
@@ -35,11 +30,4 @@ article {
   }
 }
 
-.comment-button {
-  width: 2.2rem;
 
-  &:hover {
-    background-color: #648d8a3b;
-    cursor: pointer;
-  }
-}

@@ -6,7 +6,7 @@ import { Dropdown } from "../../shared/dropdown/dropdown";
 import { PostItem } from "../post-item/post-item";
 import { Footer } from "../../shared/footer/footer";
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-group-details',
@@ -17,14 +17,21 @@ import { Router } from '@angular/router';
 export class GroupDetails {
   private postService = inject(PostsService);
   private groupService = inject(GroupsService)
-  private router=inject(Router)
+  private router=inject(ActivatedRoute)
   
   combined$!: Observable<{ group: Group | undefined; posts: Post[] }>;
 
+  groupName!:string;
+  postId!:string
+  
+
 ngOnInit(): void {
+  this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
+  this.postId=this.router.snapshot.paramMap.get('id') ?? '';
+
   this.combined$ = combineLatest([
-    this.groupService.getGroupById("asd"),
-    this.postService.getPostsByGroupId("Asd")
+    this.groupService.getGroupByName(this.groupName),
+    this.postService.getPostsByGroupId(this.postId)
   ]).pipe(
     map(([group, posts]) => ({ group, posts }))
   );

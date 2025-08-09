@@ -8,4 +8,5 @@ export interface Post{
   created_at:Date
   images:string[]
   commentsCount:number
+  creatorName:string
 }

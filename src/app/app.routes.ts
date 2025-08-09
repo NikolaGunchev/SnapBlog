@@ -1,12 +1,10 @@
 import { Routes } from '@angular/router';
 import { NotFound } from './shared/not-found/not-found';
-import { PostDetails } from './features/post-details/post-details';
 
 export const routes: Routes = [
   {
     path: '',
-    // loadComponent: () => import('./features/home/home').then(c=>c.Home),
-    component: PostDetails
+    loadComponent: () => import('./features/home/home').then(c=>c.Home),
   },
   {
     path: 'login',
@@ -15,6 +13,14 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./features/authentication/register/register').then(c=>c.Register),
+  },
+  {
+    path: 'group/:name',
+    loadComponent: () => import('./features/group-details/group-details').then(c=>c.GroupDetails),
+  },
+  {
+    path: 'group/:name/post/:id',
+    loadComponent: () => import('./features/post-details/post-details').then(c=>c.PostDetails),
   },
   {
     path: '**',
