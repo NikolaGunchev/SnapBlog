@@ -1,9 +1,4 @@
-import {
-  Component,
-  inject,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Group, Post } from '../../model';
 import { GroupsService } from '../../core/services/groups.service';
@@ -19,6 +14,7 @@ import { RouterLink } from '@angular/router';
 })
 export class PostItem implements OnInit {
   private groupService = inject(GroupsService);
+  isGroup: boolean = false;
 
   groupDetail$!: Observable<Group | undefined>;
 

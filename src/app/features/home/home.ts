@@ -16,9 +16,9 @@ import { Footer } from '../../shared/footer/footer';
 })
 export class Home implements OnInit {
   private postService = inject(PostsService);
-   posts$!: Observable<Post[]>;
+   homePosts$!: Observable<Post[]>;
 
   ngOnInit(): void {
-    this.posts$ = this.postService.getPosts();
+    this.homePosts$ = this.postService.getPosts();
   }
 }

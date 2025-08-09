@@ -2,10 +2,15 @@
   <div class="article-header mb-2">
     <div class="info-container flex content-center">
       <div class="group-info flex gap-1">
-        @if (groupDetail$ | async; as group) {
-          <a routerLink="{{group.name}}/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
+        @if (!isGroup) {
+          @if (groupDetail$ | async; as group) {
+            <a routerLink="{{group.name}}/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
+            <div class="img-holder size-7 rounded-full bg-[red]"></div>
+            <p class="text-xs content-center">{{ group?.name }}</p>
+          }
+        }@else {
           <div class="img-holder size-7 rounded-full bg-[red]"></div>
-          <p class="text-xs content-center">{{ group?.name }}</p>
+          <p class="text-xs content-center"></p>
         }
       </div>
       <span class="px-1">-</span>

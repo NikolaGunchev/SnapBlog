@@ -1,0 +1,29 @@
+@if (combined$ | async; as data) {
+  <div class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+  <div class="group-info">
+    <div class="banner min-h-150px bg-[red]"></div>
+    <div class="info flex justify-between">
+      <div class="left">
+        <div class="img-holder size-15 rounded-full bg-[red]"></div>
+        <p>group name</p>
+      </div>
+      <div class="right">
+        <button class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Create post</button>
+        <button class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-cotnainer col-span-12 lg:col-span-8">
+    <app-dropdown></app-dropdown>
+    @for (post of data.posts; track $index) {
+      <app-post-item [post]="post"></app-post-item>
+    }
+  </div>
+  <div class="side-content col-span-12 lg:col-span-4 flex flex-col gap-6 min-h-screen sticky">
+    <app-footer></app-footer>
+  </div>
+</div>
+}@else {
+  <p>loading...</p>
+}

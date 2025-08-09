@@ -2,7 +2,7 @@
 
   <div class="post-cotnainer col-span-12 lg:col-span-8">
     <app-dropdown></app-dropdown>
-    @for (post of posts$ | async; track $index) {
+    @for (post of homePosts$ | async; track $index) {
       <app-post-item [post]="post"></app-post-item>
     }
   </div>

@@ -3,7 +3,7 @@ export interface User{
   email:string,
   username:string,
   created_at:Date,
-  groups:string[] | undefined,
-  posts:string[] | undefined,
-  comments:string[] | undefined
+  groups:string[],
+  posts:string[],
+  comments:string[]
 }

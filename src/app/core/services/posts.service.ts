@@ -25,7 +25,7 @@ export class PostsService{
     return collectionData(filterd, {idField: 'id'}) as Observable<Post[]>
   }
 
-  getPostsByGroup(groupId:string):Observable<Post[]>{
+  getPostsByGroupId(groupId:string):Observable<Post[]>{
     const filtered=query(this.postsCollection, where('groupID','==',groupId));
     return collectionData(filtered, {idField: 'id'}) as Observable<Post[]>
   }
