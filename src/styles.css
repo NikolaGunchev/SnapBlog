@@ -2,6 +2,12 @@
   --main-background-color:#fcf5e4;
 }
 
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: "Inter", sans-serif;
   background-color: var(--main-background-color);
@@ -14,3 +20,5 @@ body {
 a{
   cursor: pointer;
 }
+
+html, body { height: 100%; }
