@@ -3,7 +3,7 @@ import { MenuIcons } from '../../shared/menu-icons/menu-icons';
 import { Footer } from '../../shared/footer/footer';
 import { SideGroup } from '../side-group/side-group';
 import { PostsService, UserService } from '../../core/services';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Post } from '../../model';
 import { CommonModule } from '@angular/common';
@@ -11,14 +11,14 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
 
 @Component({
   selector: 'app-post-details',
-  imports: [Footer, SideGroup, MenuIcons, CommonModule, TimeAgoPipe],
+  imports: [Footer, SideGroup, MenuIcons, CommonModule, TimeAgoPipe, RouterLink],
   templateUrl: './post-details.html',
   styleUrl: './post-details.css'
 })
 export class PostDetails implements OnInit{
   
   private postService=inject(PostsService)
-  private router=inject(ActivatedRoute)
+  public router=inject(ActivatedRoute)
   private userService=inject(UserService)
 
   post$!:Observable<Post | undefined>
@@ -30,7 +30,8 @@ export class PostDetails implements OnInit{
   ngOnInit(): void {
     this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
     this.postId=this.router.snapshot.paramMap.get('id') ?? '';
-
+  
     this.post$=this.postService.getPostById(this.postId)
+    
   }
 }

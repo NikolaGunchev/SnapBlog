@@ -34,7 +34,7 @@ export class PostsService{
   getPostById(postId: string): Observable<Post | undefined> {
   const trimmedPostId = postId.trim();
   
-  const postDocRef = doc(this.firestore, 'groups', trimmedPostId).withConverter(postConverter);
+  const postDocRef = doc(this.firestore, 'posts', trimmedPostId).withConverter(postConverter);
 
   return docData(postDocRef).pipe(
     map(postData => {

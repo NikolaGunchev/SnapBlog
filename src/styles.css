@@ -10,3 +10,7 @@ body {
 .main-background-color{
   background-color: var(--main-background-color);
 }
+
+a{
+  cursor: pointer;
+}
