@@ -24,5 +24,7 @@ export class PostItem implements OnInit {
 
   ngOnInit(): void {
     this.groupDetail$ = this.groupService.getGroupById(this.post.groupId); 
+    console.log(this.postService.postGroups());
+    
   }
 }

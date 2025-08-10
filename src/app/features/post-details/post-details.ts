@@ -4,11 +4,12 @@ import { Footer } from '../../shared/footer/footer';
 import { SideGroup } from '../side-group/side-group';
 import { AuthenticationService, PostsService, UserService } from '../../core/services';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
-import { Post } from '../../model';
+import { combineLatest, map, Observable } from 'rxjs';
+import { Comment, Post } from '../../model';
 import { CommonModule } from '@angular/common';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import { CommentsService } from '../../core/services/comments.service';
 
 @Component({
   selector: 'app-post-details',
@@ -18,15 +19,15 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 })
 export class PostDetails implements OnInit{
   private postService=inject(PostsService)
-  public router=inject(ActivatedRoute)
   private userService=inject(UserService)
   public authService=inject(AuthenticationService)
-
-  post$!:Observable<Post | undefined>
+  private commentsService=inject(CommentsService)
+  
+  public router=inject(ActivatedRoute)
+  combined$!:Observable<{post:Post | undefined; comments:Comment[]}>
   readonly currentUser=this.userService.userProfile
 
   groupName!:string
-  postId!:string
 
   private _snackBar = inject(MatSnackBar);
 
@@ -38,9 +39,15 @@ export class PostDetails implements OnInit{
 
   ngOnInit(): void {
     this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
-    this.postId=this.router.snapshot.paramMap.get('id') ?? '';
-  
-    this.post$=this.postService.getPostById(this.postId)
+    const postId=this.router.snapshot.paramMap.get('id') ?? '';
+
+    this.combined$ = combineLatest([
+      this.postService.getPostById(postId),
+      this.commentsService.getCommentsByPostId(postId)
+    ]).pipe(
+      map(([post, comments])=>({post, comments}))
+    )
+    
     this.postService.postGroups.set(false)
   }
 }

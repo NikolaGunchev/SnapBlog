@@ -55,7 +55,7 @@ ngOnInit(): void {
           this.joined=this.userService.userProfile()?.groups.includes(group.id)
           
           return combineLatest([of(group), posts$]).pipe(
-            map(([groupData, postsData]) => ({ group: groupData, posts: postsData }))
+            map(([group, posts]) => ({ group, posts}))
           );
         } else {
           return of({ group: undefined, posts: [] });
