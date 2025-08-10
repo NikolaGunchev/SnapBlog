@@ -1,27 +1,56 @@
 @if (combined$ | async; as data) {
-  <div class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
-  <div class="group-info">
-    <div class="banner min-h-150px bg-[red]"></div>
-    <div class="info flex justify-between">
-      <div class="left">
-        <div class="img-holder size-15 rounded-full bg-[red]"></div>
-        <p>group name</p>
+  <div class="group-info  max-w-[1050px] mx-auto overflow-hidden pb-10">
+    <div class="banner min-h-[130px] bg-[red]"></div>
+    <div class="info flex justify-between px-4 py-1">
+      <div class="left flex gap-3 items-center">
+        <div class="img-holder size-16 rounded-full bg-[blue] border-2 border-white">a</div>
+        <h1 class="self-end text-2xl ">{{data.group?.name | transformName}}</h1>
       </div>
-      <div class="right">
-        <button class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Create post</button>
-        <button class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
+      <div class="right self-end flex gap-2">
+        @if (!authService.isLoggedIn()) {
+          <button (click)="openSnackBar('Please login first to create a post')" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create post</button>
+          <button (click)="openSnackBar('Please login first to join a group')" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
+        } @else {
+          <button class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create post</button>
+          <button class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
+        }
       </div>
     </div>
   </div>
-
-  <div class="post-cotnainer col-span-12 lg:col-span-8">
-    <app-dropdown></app-dropdown>
-    @for (post of data.posts; track $index) {
-      <app-post-item [post]="post"></app-post-item>
-    }
-  </div>
+  <div class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative"> 
+      <div class="post-cotnainer col-span-12 lg:col-span-8">
+        <app-dropdown></app-dropdown>
+        @for (post of data.posts; track $index) {
+          <app-post-item [post]="post"></app-post-item>
+        }
+      </div>
   <div class="side-content col-span-12 lg:col-span-4 flex flex-col gap-6 min-h-screen sticky">
-    <app-footer></app-footer>
+    <div class="group-details bg-[#fcf1d9] py-1 px-3 ">
+      <div class="basic-info relative line mb-4">
+        <h3 class="font-bold pb-2">{{data.group?.name}}</h3>
+        <p class="opacity-75 pb-2">{{data.group?.description}}</p>
+        <p >Created {{data.group?.created_at?.toDate() | date}}</p>
+        <p>Members: {{data.group?.memberCount}}</p>
+      </div>
+      <div class="tags relative line mb-3">
+        <p class="pb-1 font-semibold">Group tags:</p>
+        <div class="tags-container flex gap-2">
+          @for (tag of data.group?.tags; track $index) {
+            <span class="bg-[#4d6c6a1a] rounded-full px-1">{{tag}}</span>
+          }
+        </div>
+      </div>
+      <div class="rules">
+        <p class="pb-1 font-semibold">Group rules</p>
+        <div class="rules-container">
+          <ol>
+            @for (rule of data.group?.rules; track $index) {
+              <li>{{rule}}</li>
+            }
+          </ol>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 }@else {

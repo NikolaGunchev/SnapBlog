@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore"
+
 export interface Post{
   id:string,
   title:string,
@@ -5,7 +7,7 @@ export interface Post{
   groupId:string,
   likesCount:number,
   content:string,
-  created_at:Date
+  created_at:Timestamp
   images:string[]
   commentsCount:number
   creatorName:string

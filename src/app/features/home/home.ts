@@ -20,5 +20,7 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.homePosts$ = this.postService.getPosts();
+
+    this.postService.postGroups.set(false)
   }
 }

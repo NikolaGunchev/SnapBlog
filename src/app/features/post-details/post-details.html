@@ -11,7 +11,7 @@
                 <div class="flex flex-col">
                   <div class="flex">
                     <a [routerLink]="['../../']" [relativeTo]="router">
-                      <p class="text-md content-center">{{groupName}}</p>
+                      <p class="text-md content-center hover:text-[#76a7a4]">{{groupName}}</p>
                     </a>
                     <span class="px-1">-</span>
                     <p class="time text-md text-gray content-center">{{post.created_at | timeAgo}}</p>
@@ -62,8 +62,14 @@
   
     <div class="comments-section mt-5">
       <div class="comment-field flex-grow flex items-center justify-center  min-w-[150px] sm:min-w-[200px] md:min-w-[300px] relative mb-5">
-        <input type="text" id="comment" placeholder="Type a comment" disabled="true"
-          class="w-full pl-10 pr-4 py-1 border-2 border-[#fff1dc] bg-[#f6edd9] rounded-full focus:outline-none  transition-all duration-300">
+        @if (!authService.isLoggedIn()) {
+          <div
+            (click)="openSnackBar('Please login first to post a comment')"
+            class="absolute inset-0 cursor-pointer z-10 rounded-full"
+          ></div>
+        }
+        <input type="text" id="comment" placeholder="Type a comment" [disabled]="!authService.isLoggedIn()"
+          class="w-full pl-10 pr-4 py-1 border-2 border-[#fff1dc] bg-[#f6edd9] rounded-full focus:outline-none transition-all duration-300">
       </div>
   
       <div class="comments flex flex-col gap-5">

@@ -1,19 +1,24 @@
 @if (groupDetail$ | async; as group) {
   <article class="px-3 py-1 mb-5 rounded-md relative max-h-[650px]">
-    <a routerLink="group/{{group.name}}/post/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
-    <div class="article-header mb-2 relative z-20">
+    @if(!postService.postGroups()){
+      <a routerLink="group/{{group.name}}/post/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
+    }@else {
+      <a routerLink="/group/{{group.name}}/post/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
+    }
+    <div class="article-header mb-2 relative max-w-fit z-20">
       <div class="info-container flex items-center">
         <div class="group-info flex gap-1">
-          @if (!isGroup) {
+          @if (!postService.postGroups()) {
+            
             <a routerLink="/group/{{group.name}}">
               <div class="img-holder size-7 rounded-full bg-[red]">g</div>
             </a>
             <a routerLink="/group/{{group.name}}" class="content-center">
-              <p class="text-xs ">{{ group.name }}</p>   
+              <p class="text-xs hover:text-[#76a7a4]">{{ group.name }}</p>   
             </a>
           }@else {
             <div class="img-holder size-7 rounded-full bg-[red]">g</div>
-            <p class="text-xs items-center">{{post.creatorName}}</p>
+            <p class="text-xs self-center">{{post.creatorName}}</p>
           }
         </div>
         <span class="px-1">-</span>
@@ -30,7 +35,7 @@
     } @else {
       <div class="post-content text-sm opacity-75 relative z-20 max-w-fit">{{post.content}}</div>
     }
-    <div class="post-buttons flex gap-4 mt-3 relative z-20">
+    <div class="post-buttons flex gap-4 mt-3 relative z-20 max-w-fit">
       <div class="like-buttons flex bg-[#648d8a1b] rounded-2xl p-2 gap-2">
         <svg class="likes-icon like  rounded-2xl size-5 cursor-pointer" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M8.9707 19.42V13.89" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>

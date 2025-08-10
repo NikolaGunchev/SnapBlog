@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Group {
   id: string;
   name: string;
@@ -7,7 +9,7 @@ export interface Group {
   memberCount: number
   rules: string[];
   tags: string[];
-  created_at: Date;
+  created_at: Timestamp;
   bannerImgUrl:string,
   groupImgUrl:string
 }

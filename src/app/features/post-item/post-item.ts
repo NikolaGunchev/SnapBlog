@@ -4,7 +4,8 @@ import { Group, Post } from '../../model';
 import { GroupsService } from '../../core/services/groups.service';
 import { CommonModule } from '@angular/common';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { PostsService } from '../../core/services';
 
 @Component({
   selector: 'app-post-item',
@@ -14,13 +15,14 @@ import { RouterLink } from '@angular/router';
 })
 export class PostItem implements OnInit {
   private groupService = inject(GroupsService);
-  isGroup: boolean = false;
+  public postService=inject(PostsService)
+  public router=inject(ActivatedRoute)
 
   groupDetail$!: Observable<Group | undefined>;
 
   @Input() post!: Post;
 
   ngOnInit(): void {
-    this.groupDetail$ = this.groupService.getGroupById(this.post.groupId);
+    this.groupDetail$ = this.groupService.getGroupById(this.post.groupId); 
   }
 }

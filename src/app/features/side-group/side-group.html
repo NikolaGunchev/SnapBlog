@@ -2,13 +2,15 @@
   <h5 class="mb-5 ml-1 text-sm">POPULAR GROUPS</h5>
   <div class="groups-container rounded-lg p-3 flex flex-col gap-2">
     @for (group of topFiveGroups$ | async; track $index) {
-      <div class="group flex gap-3 items-center p-2 hover:bg-[#ecdcba4d] active:bg-[#ecdcbab0]">
-        <div class="image-holder size-9 rounded-full bg-[red]"></div>
-        <div class="name">
-          <p class="text-sm">{{group.name}}</p>
-          <p class="text-xs text-gray-500">{{group.memberCount}} members</p>
+      <a [routerLink]="['/group', group.name]">
+        <div class="group flex gap-3 items-center p-2 hover:bg-[#ecdcba4d] active:bg-[#ecdcbab0]">
+          <div class="image-holder size-9 rounded-full bg-[red]"></div>
+          <div class="name">
+            <p class="text-sm">{{group.name}}</p>
+            <p class="text-xs text-gray-500">{{group.memberCount}} members</p>
+          </div>
         </div>
-      </div>
+      </a>
     }
   </div>
 </div>

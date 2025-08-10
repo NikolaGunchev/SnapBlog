@@ -3,10 +3,11 @@ import { GroupsService } from '../../core/services';
 import { Observable } from 'rxjs';
 import { Group } from '../../model';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-side-group',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './side-group.html',
   styleUrl: './side-group.css'
 })
