@@ -3,7 +3,6 @@ import { doc, docData, Firestore } from '@angular/fire/firestore';
 import { AuthenticationService } from './authentication.service';
 import { User } from '../../model';
 import { map, Observable } from 'rxjs';
-import { DocumentReference } from '@angular/fire/compat/firestore';
 import { userConverter } from './firestoreConverter.service';
 
 @Injectable({

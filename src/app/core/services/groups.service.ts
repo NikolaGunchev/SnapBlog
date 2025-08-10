@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { collection, collectionData, CollectionReference, doc, docData, Firestore, orderBy, query, where, limit } from "@angular/fire/firestore";
+import { collection, collectionData, CollectionReference, doc, docData, Firestore, orderBy, query, where, limit, Timestamp } from "@angular/fire/firestore";
 import { map, Observable, take } from "rxjs";
 import { Group } from "../../model";
 import { groupConverter } from "./firestoreConverter.service";
@@ -46,6 +46,7 @@ getGroupById(groupId: string): Observable<Group | undefined> {
   return docData(groupDocRef).pipe(
     map(groupData => {
       if (groupData) {
+        
         return groupData;
       } else {
         return undefined;
