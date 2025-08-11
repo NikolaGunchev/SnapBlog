@@ -22,8 +22,11 @@ export class PostItem implements OnInit {
 
   @Input() post!: Post;
 
+  isGroupPosts=this.router.snapshot.paramMap.get('name')===null ? true : false
+
   ngOnInit(): void {
     this.groupDetail$ = this.groupService.getGroupById(this.post.groupId); 
+    console.log(this.post);
     
   }
 }

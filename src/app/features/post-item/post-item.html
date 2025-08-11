@@ -1,6 +1,6 @@
 @if (groupDetail$ | async; as group) {
   <article class="px-3 py-1 mb-5 rounded-md relative max-h-[650px]">
-    @if(!postService.postGroups()){
+    @if(isGroupPosts){
       <a routerLink="group/{{group.name}}/post/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
     }@else {
       <a routerLink="/group/{{group.name}}/post/{{post.id}}" class="inset-anchor absolute inset-0 z-10 block rounded-md no-underline"></a>
@@ -8,7 +8,7 @@
     <div class="article-header mb-2 relative max-w-fit z-20">
       <div class="info-container flex items-center">
         <div class="group-info flex gap-1">
-          @if (!postService.postGroups()) {
+          @if (isGroupPosts) {
             <a routerLink="/group/{{group.name}}">
               <div class="img-holder size-7 rounded-full bg-[red]">g</div>
             </a>

@@ -11,8 +11,6 @@ export class PostsService{
   private firestore = inject(Firestore)
   private postsCollection: CollectionReference
 
-  public postGroups=signal(false)
-
   constructor(){
     this.postsCollection=collection(this.firestore,'posts')
   }

@@ -18,6 +18,9 @@ export class Header {
   readonly isLogged = this.authService.isLoggedIn;
   readonly currentUser = this.userService.userProfile
 
+  showMenu: boolean = false;
+  private hideTimeout: any;
+
   logout() {
     this.authService.logout().subscribe({
       next: () => {
@@ -27,5 +30,31 @@ export class Header {
         console.log(err);
       },
     });
+  }
+
+  openMenu(): void {
+    // Clear any pending hide timeout if the user re-enters quickly
+    this.cancelClose();
+    this.showMenu = true;
+  }
+
+  closeMenu(): void {
+    // Start a timeout to hide the menu after a short delay
+    this.hideTimeout = setTimeout(() => {
+      this.showMenu = false;
+    }, 300);
+  }
+
+  cancelClose(): void {
+    // Clear the hide timeout immediately if the mouse re-enters
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up the timeout when the component is destroyed to prevent memory leaks
+    this.cancelClose();
   }
 }

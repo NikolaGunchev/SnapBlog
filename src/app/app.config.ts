@@ -7,7 +7,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
-import { provideAuth, getAuth } from '@angular/fire/auth';
+import { provideAuth, getAuth, connectAuthEmulator } from '@angular/fire/auth';
 import { provideFunctions, getFunctions, connectFunctionsEmulator } from '@angular/fire/functions';
 
 
@@ -20,7 +20,7 @@ const firebaseConfig = {
   appId: '1:636311296591:web:961442cc761399b860e83a',
 };
 
-const useEmulator = true;
+const useEmulator = false;
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -28,7 +28,14 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
-    provideAuth(() => getAuth()),
+    // provideAuth(() => getAuth()),
+     provideAuth(() => {
+      const auth = getAuth();
+      if (useEmulator) {
+        connectAuthEmulator(auth, 'http://localhost:9099'); // Connect to the Auth emulator
+      }
+      return auth;
+    }),
     // provideFunctions(() => getFunctions())
      provideFunctions(() => {
       const functions = getFunctions();

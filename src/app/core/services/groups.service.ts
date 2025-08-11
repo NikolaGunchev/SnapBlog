@@ -5,6 +5,7 @@ import { Group } from "../../model";
 import { groupConverter } from "./firestoreConverter.service";
 import { HttpsCallable } from "firebase/functions";
 import { getFunctions, httpsCallable } from "@angular/fire/functions";
+import { AuthenticationService } from "./authentication.service";
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class GroupsService{
   private groupsCollection: CollectionReference<Group>
   private functions=getFunctions();
   private joinGroupCallable: HttpsCallable<any,any>
+
 
 
   constructor(){

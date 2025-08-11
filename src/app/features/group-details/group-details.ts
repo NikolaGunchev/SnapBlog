@@ -40,15 +40,10 @@ export class GroupDetails {
   groupName!:string;
   postId!:string
 
-  constructor(){
-    this.postService.postGroups.set(true)
-   }
   
 
 ngOnInit(): void {
-  console.log(this.authService.currentUser());
-  console.log(this.authService.isLoggedIn());
-  console.log(this.userService.userProfile());
+
   
   this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
   this.postId=this.router.snapshot.paramMap.get('id') ?? '';
