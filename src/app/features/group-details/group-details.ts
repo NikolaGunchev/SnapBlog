@@ -17,10 +17,11 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 })
 export class GroupDetails {
   private postService = inject(PostsService);
-  private groupService = inject(GroupsService)
+  public groupService = inject(GroupsService)
+  private userService=inject(UserService)
+  
   private router=inject(ActivatedRoute)
   public authService=inject(AuthenticationService)
-  private userService=inject(UserService)
 
   private _snackBar = inject(MatSnackBar);
 
@@ -30,7 +31,8 @@ export class GroupDetails {
     });
   }
 
-  private joined:boolean | undefined
+
+  public joined:boolean | undefined
   
   combined$!: Observable<{ group: Group | undefined; posts: Post[] }>;
   group$!:Observable<Group |undefined>
@@ -44,6 +46,10 @@ export class GroupDetails {
   
 
 ngOnInit(): void {
+  console.log(this.authService.currentUser());
+  console.log(this.authService.isLoggedIn());
+  console.log(this.userService.userProfile());
+  
   this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
   this.postId=this.router.snapshot.paramMap.get('id') ?? '';
 
