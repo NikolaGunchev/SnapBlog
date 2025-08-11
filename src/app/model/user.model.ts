@@ -7,5 +7,6 @@ export interface User{
   created_at:Timestamp,
   groups:string[],
   posts:string[],
-  comments:string[]
+  comments:string[],
+  likedPosts:string[]
 }
