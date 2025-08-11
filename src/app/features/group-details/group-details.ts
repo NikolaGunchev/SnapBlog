@@ -37,13 +37,15 @@ export class GroupDetails {
 
   groupName!:string;
   postId!:string
+
+  constructor(){
+    this.postService.postGroups.set(true)
+   }
   
 
 ngOnInit(): void {
   this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
   this.postId=this.router.snapshot.paramMap.get('id') ?? '';
-
-  this.postService.postGroups.set(true)
 
   this.group$=this.groupService.getGroupByName(this.groupName)
 

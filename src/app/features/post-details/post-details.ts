@@ -37,6 +37,10 @@ export class PostDetails implements OnInit{
     });
   }
 
+  constructor(){
+    this.postService.postGroups.set(false)
+   }
+
   ngOnInit(): void {
     this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
     const postId=this.router.snapshot.paramMap.get('id') ?? '';
@@ -47,7 +51,5 @@ export class PostDetails implements OnInit{
     ]).pipe(
       map(([post, comments])=>({post, comments}))
     )
-    
-    this.postService.postGroups.set(false)
   }
 }

@@ -18,9 +18,13 @@ export class Home implements OnInit {
   private postService = inject(PostsService);
    homePosts$!: Observable<Post[]>;
 
+   constructor(){
+    this.postService.postGroups.set(false)
+   }
+
   ngOnInit(): void {
     this.homePosts$ = this.postService.getPosts();
 
-    this.postService.postGroups.set(false)
+    
   }
 }
