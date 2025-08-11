@@ -1,32 +1,73 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+// firebase/functions/src/index.ts
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
 
-import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
+admin.initializeApp();
+const firestore = admin.firestore();
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+exports.joinGroup = functions.https.onCall(async (data:any, context:any) => {
+  const userId = context.auth?.uid;
+  const { groupId } = data;
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+  // 1. Check for authentication and required data
+  if (!userId) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'User must be authenticated to join a group.'
+    );
+  }
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+  if (!groupId || typeof groupId !== 'string') {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'The function must be called with a valid groupId.'
+    );
+  }
+
+  const groupRef = firestore.collection('groups').doc(groupId);
+  const userRef = firestore.collection('users').doc(userId);
+
+  try {
+    await firestore.runTransaction(async (transaction) => {
+      // 2. Read the current state of the documents
+      const groupDoc = await transaction.get(groupRef);
+      const userDoc = await transaction.get(userRef);
+
+      if (!groupDoc.exists) {
+        throw new functions.https.HttpsError('not-found', 'Group not found.');
+      }
+      if (!userDoc.exists) {
+        throw new functions.https.HttpsError('not-found', 'User profile not found.');
+      }
+
+      const groupData = groupDoc.data();
+
+      // 3. Check if the user is already a member
+      if (groupData?.memberCount && groupData.memberCount.includes(userId)) {
+        throw new functions.https.HttpsError(
+          'already-exists',
+          'User is already a member of this group.'
+        );
+      }
+
+      // 4. Update the documents using the transaction
+      const updatedGroupData = {
+        memberCount: admin.firestore.FieldValue.arrayUnion(userId),
+        memberCountValue: admin.firestore.FieldValue.increment(1),
+      };
+      const updatedUserData = {
+        groups: admin.firestore.FieldValue.arrayUnion(groupId),
+      };
+
+      transaction.update(groupRef, updatedGroupData);
+      transaction.update(userRef, updatedUserData);
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    throw new functions.https.HttpsError('internal', 'Transaction failed.', error);
+  }
+});

@@ -1,18 +1,24 @@
 import { inject, Injectable } from "@angular/core";
-import { collection, collectionData, CollectionReference, doc, docData, Firestore, orderBy, query, where, limit, Timestamp } from "@angular/fire/firestore";
-import { map, Observable, take } from "rxjs";
+import { collection, collectionData, CollectionReference, doc, docData, Firestore, orderBy, query, where, limit } from "@angular/fire/firestore";
+import {  catchError, from, map, Observable, take, throwError } from "rxjs";
 import { Group } from "../../model";
 import { groupConverter } from "./firestoreConverter.service";
+import { HttpsCallable } from "firebase/functions";
+import { getFunctions, httpsCallable } from "@angular/fire/functions";
 
 @Injectable({
   providedIn: 'root'
 })
 export class GroupsService{
   private firestore = inject(Firestore)
-  private groupsCollection: CollectionReference
+  private groupsCollection: CollectionReference<Group>
+  private functions=getFunctions();
+  private joinGroupCallable: HttpsCallable<any,any>
+
 
   constructor(){
-    this.groupsCollection=collection(this.firestore,'groups')
+    this.groupsCollection=collection(this.firestore,'groups').withConverter(groupConverter) as CollectionReference<Group>;
+    this.joinGroupCallable=httpsCallable(this.functions, 'joinGroup')
   }
 
   getGroups():Observable<Group[]>{
@@ -69,4 +75,20 @@ getGroupByName(name: string): Observable<Group | undefined> {
     take(1)
   ) as Observable<Group | undefined>;
 }
+
+  joinGroup(groupId: string): Observable<void> {
+    return from(this.joinGroupCallable({ groupId })).pipe(
+      map(response => {
+        // The actual response from the function is in the 'data' property
+        const result = response.data as { success: boolean };
+        if (!result || !result.success) {
+          throw new Error('Cloud function call failed with no success.');
+        }
+      }),
+      catchError(error => {
+        console.error('Error joining group:', error.message);
+        return throwError(() => error);
+      })
+    );
+  }
 }
