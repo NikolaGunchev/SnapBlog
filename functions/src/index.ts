@@ -5,9 +5,24 @@ import * as admin from 'firebase-admin';
 admin.initializeApp();
 const firestore = admin.firestore();
 
-exports.joinGroup = functions.https.onCall(async (data:any, context:any) => {
-  const userId = context.auth?.uid;
-  const { groupId } = data;
+interface CreateGroupData {
+  name: string;
+  description: string;
+  logoImgUrl?: string; 
+  bannerImgUrl?: string; 
+  tags: string; 
+  rules?: string; 
+}
+
+interface CreateGroupResponse {
+  success: boolean;
+  groupId?: string;
+  error?: string;
+}
+
+exports.joinGroup = functions.https.onCall( async (request: functions.https.CallableRequest<{ groupId: string }>) => {
+    const userId = request.auth?.uid;
+    const { groupId } = request.data; 
 
   // 1. Check for authentication and required data
   if (!userId) {
@@ -71,3 +86,89 @@ exports.joinGroup = functions.https.onCall(async (data:any, context:any) => {
     throw new functions.https.HttpsError('internal', 'Transaction failed.', error);
   }
 });
+
+exports.createGroup = functions.https.onCall(
+ async (request: functions.https.CallableRequest<CreateGroupData>): Promise<CreateGroupResponse> => {
+    const { name, description, tags, logoImgUrl, bannerImgUrl, rules } = request.data;
+
+    const userId = request.auth?.uid;
+
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated to create a group.'
+      );
+    }
+
+    if (!name || typeof name !== 'string' || name.length < 4) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Group name is required and must be at least 4 characters.'
+      );
+    }
+    if (!description || typeof description !== 'string') {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Group description is required.'
+      );
+    }
+    if (!tags || typeof tags !== 'string') {
+        throw new functions.https.HttpsError(
+          'invalid-argument',
+          'Tags are required.'
+        );
+      }
+    
+    const processedTags = tags.split(' ')
+                      .map(tag => tag.trim())
+                      .filter(tag => tag.length > 0);
+
+    if (processedTags.length < 3) {
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'Please provide at least 3 tags.'
+        );
+    }
+
+
+    const newGroupData: any = {
+      name,
+      description,
+      creatorId: userId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      memberCount: [userId], 
+      memberCountValue: 1,
+      tags: processedTags,
+    };
+
+    if (logoImgUrl) {
+      newGroupData.logoImgUrl = logoImgUrl;
+    }
+    if (bannerImgUrl) {
+      newGroupData.bannerImgUrl = bannerImgUrl;
+    }
+    if (rules) {
+      const processedRules=rules.split('\n')
+      .map(rule=> rule.trim())
+      
+      newGroupData.rules = processedRules;
+    }
+
+    try {
+      const groupRef = await firestore.collection('groups').add(newGroupData);
+
+      const userRef = firestore.collection('users').doc(userId);
+      await userRef.update({
+        groups: admin.firestore.FieldValue.arrayUnion(groupRef.id)
+      });
+
+      return { success: true, groupId: groupRef.id };
+    } catch (error: any) {
+      console.error('Error creating group:', error);
+      if (error instanceof functions.https.HttpsError) {
+        return { success: false, error: error.message };
+      }
+      return { success: false, error: 'Failed to create group. Internal server error.' };
+    }
+  }
+);

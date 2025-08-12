@@ -1,0 +1,17 @@
+.tags-helper:hover{
+  .helper{
+    display: block;
+  }
+}
+
+.rules-helper:hover{
+  .helper{
+    display: block;
+  }
+}
+
+button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed; 
+  opacity: 0.6; 
+}

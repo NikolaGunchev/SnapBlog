@@ -79,6 +79,22 @@ export class FormBuilderService {
         });
         break;
 
+      case 4:
+        //group
+        form = this.formBuilder.group({
+          name: ['', [Validators.required, Validators.minLength(4)]],
+          description: ['', [Validators.required]],
+          images: this.formBuilder.group({
+            logoImg: [''],
+            bannerImg: [''],
+          }),
+          tags: [
+            '',
+            [Validators.required, this.minTagsValidator],
+          ],
+          rules: [''],
+        });
+        break;
       default:
         throw new Error(`Unsupported form number: ${number}`);
     }
@@ -94,7 +110,6 @@ export class FormBuilderService {
     return form.get('email');
   }
 
-
   getPasswordsGroup(form: FormGroup) {
     return form.get('passwords') as FormGroup;
   }
@@ -107,8 +122,36 @@ export class FormBuilderService {
     return this.getPasswordsGroup(form).get('rePassword');
   }
 
-  getLoginPasswordControl(form:FormGroup){
+  getLoginPasswordControl(form: FormGroup) {
     return form.get('password');
+  }
+
+  getNameControl(form: FormGroup) {
+    return form.get('name');
+  }
+
+  getDescriptionControl(form: FormGroup) {
+    return form.get('description');
+  }
+
+  getImagesGroupControl(form: FormGroup) {
+    return form.get('images') as FormGroup;
+  }
+
+  getLogoImgControl(form: FormGroup) {
+    return this.getImagesGroupControl(form).get('logoImg');
+  }
+
+  getBannerImgControl(form: FormGroup) {
+    return this.getImagesGroupControl(form).get('bannerImg');
+  }
+
+  getTagsControl(form: FormGroup) {
+    return form.get('tags');
+  }
+
+  getRulesControl(form: FormGroup) {
+    return form.get('rules');
   }
 
   isUsernameError(form: FormGroup): boolean {
@@ -139,13 +182,24 @@ export class FormBuilderService {
     );
   }
 
-  isLoginPasswordError(form:FormGroup):boolean{
-    const control=this.getLoginPasswordControl(form)
-    return (
-      (control?.invalid &&
-        (control?.dirty || control?.touched)) ||
-      false
-    );
+  isLoginPasswordError(form: FormGroup): boolean {
+    const control = this.getLoginPasswordControl(form);
+    return (control?.invalid && (control?.dirty || control?.touched)) || false;
+  }
+
+  isNameError(form:FormGroup):boolean{
+    const control=this.getNameControl(form);
+    return (control?.invalid && (control?.dirty || control?.touched)) || false;
+  }
+
+  isDescriptionError(form:FormGroup):boolean{
+    const control=this.getDescriptionControl(form);
+    return (control?.invalid && (control?.dirty || control?.touched)) || false;
+  }
+  
+  isTagsError(form:FormGroup):boolean{
+    const control=this.getTagsControl(form);
+    return (control?.invalid && (control?.dirty || control?.touched)) || false;
   }
 
   getUsernameErrorMessage(form: FormGroup): string {
@@ -204,8 +258,8 @@ export class FormBuilderService {
     return '';
   }
 
-  getLoginPasswordErrorMessage(form:FormGroup):string{
-    const control=this.getLoginPasswordControl(form)
+  getLoginPasswordErrorMessage(form: FormGroup): string {
+    const control = this.getLoginPasswordControl(form);
 
     if (control?.errors?.['required']) {
       return 'Password is required';
@@ -215,6 +269,39 @@ export class FormBuilderService {
       return 'Password must be atleast 5 characters';
     }
 
+    return '';
+  }
+
+    getNameErrorMessage(form: FormGroup): string {
+    const control = this.getNameControl(form);
+
+    if (control?.errors?.['required']) {
+      return 'Name is required';
+    }
+    if (control?.errors?.['minlength']) {
+      return 'Name should have at least 4 symbols!';
+    }
+    return '';
+  }
+
+    getDescriptionErrorMessage(form: FormGroup): string {
+    const control = this.getDescriptionControl(form);
+
+    if (control?.errors?.['required']) {
+      return 'Description is required';
+    }
+    return '';
+  }
+
+    getTagsErrorMessage(form: FormGroup): string {
+    const control = this.getTagsControl(form);
+
+    if (control?.errors?.['required']) {
+      return 'Tags are required';
+    }
+    if(control?.errors?.['lessTags']){
+      return 'Please enter atleast 3 tags'
+    }
     return '';
   }
 
@@ -230,18 +317,18 @@ export class FormBuilderService {
     };
   }
 
-   markFormGroupTouched(form: FormGroup): void {
-    Object.keys(form.controls).forEach(key => {
+  markFormGroupTouched(form: FormGroup): void {
+    Object.keys(form.controls).forEach((key) => {
       const control = form.get(key);
       if (control instanceof FormGroup) {
-        Object.keys(control.controls).forEach(nestedKey => {
-          const nestedControl = control.get(nestedKey)
+        Object.keys(control.controls).forEach((nestedKey) => {
+          const nestedControl = control.get(nestedKey);
           nestedControl?.markAllAsTouched();
-        })
+        });
       } else {
         control?.markAsTouched();
       }
-    })
+    });
   }
 
   private passwordMatchValidator(
@@ -256,4 +343,22 @@ export class FormBuilderService {
 
     return null;
   }
+
+private minTagsValidator(tagsControl: AbstractControl): ValidationErrors | null {
+  const tagsValue = tagsControl.value;
+
+  if (!tagsValue || tagsValue.trim() === '') {
+    return { lessTags: true };
+  }
+
+  const tags = tagsValue.trim().split(' ');
+  
+  const numberOfTags = tags.length;
+
+  if (numberOfTags < 3) {
+    return { lessTags: true };
+  }
+
+  return null;
+}
 }

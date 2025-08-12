@@ -1,0 +1,124 @@
+<div class="flex h-screen items-center justify-center ">
+  <div class="mx-auto w-full max-w-md rounded-lg bg-[#eae4d9] px-6 py-10 shadow-lg">
+    <div class="mb-8 text-center">
+      <h2 class="text-3xl font-bold text-[#3d3a33]">Create your own group</h2>
+    </div>
+    <form class="login space-y-6" [formGroup]="groupForm" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="title" class="text-[#3d3a33]">Name</label>
+        <input
+          [class.border-red]="isNameInvalid"
+          type="text"
+          id="title"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+          formControlName="name"
+        />
+      </div>
+      @if (isNameInvalid) {
+      <p class="text-[#FF0000]">{{nameErrorMessage}}</p>
+      }
+
+      <div class="filed">
+        <label for="description" class="text-[#3d3a33]">Description</label>
+        <textarea 
+        [class.border-red]="isDescriptionInvalid"
+        name="description" 
+        id="description" 
+        class="resize-none block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+        formControlName="description"></textarea>
+      </div>
+      @if(isDescriptionInvalid){
+      <p class="text-[#FF0000]">{{descriptionErrorMessage}}</p>
+      }
+
+      <div formGroupName="images">
+        <div class="field">
+          <label for="groupImg" class="text-[#3d3a33]">Profile image <span class="text-xs opacity-60">(optional)</span></label>
+          <input
+          type="file" 
+          id="groupImg" 
+          formControlName="logoImg"
+          (change)="onFileSelectedLogo($event)" accept="image/*"
+            class="mt-1 block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-[#76a7a4] file:text-white
+                    hover:file:bg-[#5b8a87]">
+
+            @if (selectedImagePreviewLogo) {
+              <div class="mt-2 w-28 h-28 relative group">
+                <img [src]="selectedImagePreviewLogo" alt="Image Preview" class="w-full h-full object-cover rounded-md shadow-sm">
+                <button (click)="removeImageLogo()" 
+                class="absolute top-1 right-1 bg-red-500 text-white rounded-full size-4 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                X</button>
+              </div>
+            }
+        </div>
+
+        <div class="field">
+            <label for="bannerImg" class="text-[#3d3a33]">Profile image <span class="text-xs opacity-60">(optional)</span></label>
+            <input 
+            type="file" 
+            id="bannerImg" 
+            formControlName="bannerImg"
+            (change)="onFileSelectedBanner($event)" accept="image/*"
+              class="mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-[#76a7a4] file:text-white
+                      hover:file:bg-[#5b8a87]">
+
+              @if (selectedImagePreviewBanner) {
+                <div class="mt-2 w-44 h-20 relative group">
+                  <img [src]="selectedImagePreviewBanner" alt="Image Preview" class="w-full h-full object-cover rounded-md shadow-sm">
+                  <button (click)="removeImageBanner()" 
+                  class="absolute top-1 right-1 bg-red-500 text-white rounded-full size-4 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                  X</button>
+                </div>
+              }
+        </div>
+      </div>
+     
+      <div class="field relative tags-helper">
+        <label for="tags" class="text-[#3d3a33]">Tags <span class="text-xs opacity-60">(please add atleast 3 tags)</span></label>
+        <input
+          [class.border-red]="isTagsInvalid"
+          type="text"
+          id="tags"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 py-1 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+          formControlName="tags"
+          />
+        <div
+          class="helper absolute top-full  mt-1 p-2 bg-[#fcf5e4] text-black text-xs rounded-md shadow-lg whitespace-nowrap hidden group-hover:block transition-all duration-200 z-10">
+          Enter space-separated tags like: `comedy games development angular`
+        </div>
+        @if(isTagsInvalid){
+          <p class="text-[#FF0000]">{{tagsErrorMessage}}</p>
+        }
+      </div>
+
+      <div class="field relative rules-helper pt-4">
+        <label for="rules" class="text-[#3d3a33]">Rules <span class="text-xs opacity-60">(optional)</span></label>
+        <textarea 
+        name="textarea-rules" 
+        id="rules"
+        class="resize-none block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+        formControlName="rules"
+        ></textarea>
+        <div
+          class="helper absolute top-full  mt-1 p-2 bg-[#fcf5e4] text-black text-xs rounded-md shadow-lg whitespace-nowrap hidden group-hover:block transition-all duration-200 z-10">
+          Please separate the rules by pressing enter!
+        </div>
+      </div>
+
+      <button
+      type="submit"
+      [disabled]="!groupForm.valid"
+        class="content-center w-[100px] rounded-md bg-[#76a7a4] py-2 text-lg font-semibold text-white transition-colors duration-200 hover:bg-[#5b8a87] focus:outline-none focus:ring-4 focus:ring-[#76a7a4] focus:ring-opacity-50"
+        >
+        Create
+      </button>
+    </form>
+  </div>
