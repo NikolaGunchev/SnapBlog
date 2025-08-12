@@ -11,5 +11,5 @@ export interface Group {
   tags: string[];
   created_at: Timestamp;
   bannerImgUrl:string,
-  groupImgUrl:string
+  logoImgUrl:string
 }

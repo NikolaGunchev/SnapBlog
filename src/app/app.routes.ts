@@ -19,9 +19,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/group-details/group-details').then(c=>c.GroupDetails),
   },
   {
+    path:'create-group',
+    loadComponent: () => import('./features/create-group/create-group').then(c=>c.CreateGroup),
+  },
+  {
     path: 'group/:name/post/:id',
     loadComponent: () => import('./features/post-details/post-details').then(c=>c.PostDetails),
   },
+  
   {
     path: '**',
     component: NotFound

@@ -27,7 +27,7 @@
           }
         </div>
     <div class="title pb-2">
-      <h2 class="text-2xl">title</h2>
+      <h2 class="text-2xl">{{data.post?.title}}</h2>
     </div>
     @if (data.post!.images.length>0) {
       @for (imageUrl of data.post?.images; track imageUrl) {

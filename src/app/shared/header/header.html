@@ -1,51 +1,48 @@
-    <header class="main-background-color py-2 px-6 shadow-md border-b-2 border-[#fff4e1]">
-        <div class="mx-auto flex justify-between items-center space-x-4">
-            <div class="flex-shrink-0">
-                <a routerLink=""><img src="logo.png" alt="logo" class="h-8 rounded-lg"></a>
-            </div>
-    
-            <div class="search-field flex-grow flex items-center justify-center max-w-xl min-w-[150px] sm:min-w-[200px] md:min-w-[300px] relative">
-                <label for="search" class="absolute left-1 text-gray-400 cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </label>
-                <input type="text" id="search" placeholder="Search..."
-                  class="w-full pl-10 pr-4 py-1 border-2 border-[#fff1dc] bg-[#f6edd9] rounded-full focus:outline-none focus:ring-2 transition-all duration-300">
-            </div>
-    
-             @if (!isLogged()) {
-               <div class="auth-buttons flex items-center space-x-2 flex-shrink-0">
-                   <a routerLink="/register" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
-                       Sign Up
-                   </a>
-                   <a routerLink="/login" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
-                       Login
-                   </a>
-               </div>
-             } @else {
-               <div class="flex items-center space-x-4 flex-shrink-0">
-                  <button class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create Group</button>
-                  <div class="user-info relative flex gap-1 items-center">
-                    <p class="text-gray-700 font-medium whitespace-nowrap">{{ currentUser()?.username }}</p>
-                    <a routerLink="/group/userprofile"
-                    (mouseenter)="openMenu()"
-                    (mouseleave)="closeMenu()">
-                        <div class="img-holder size-9 rounded-full bg-[red]">g</div>
-                    </a>
-                    @if(showMenu){
-                      <div class="profile-menu absolute bottom-[-4.5rem] p-3 right-0 bg-[#fcf1d9] max-w-fit rounded-lg shadow-md"
-                        (mouseenter)="cancelClose()"
-                        (mouseleave)="closeMenu()">
-                        <a class="p-1 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150">View Profile</a>
-                        <p (click)="logout()" class="p-1 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 cursor-pointer">Logout</p>
-                      </div>
-                    }
-                  </div>
-                  <!-- <a (click)="logout()" class="bg-[#76a7a4] text-white font-medium py-1.5 px-4 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
-                      Logout
-                  </a> -->
-               </div>
-             }
+<header class="main-background-color py-2 px-6 shadow-md border-b-2 border-[#fff4e1]">
+    <div class="mx-auto flex justify-between items-center space-x-4">
+        <div class="flex-shrink-0">
+            <a routerLink=""><img src="logo.png" alt="logo" class="h-8 rounded-lg"></a>
         </div>
-    </header>
+
+        <div class="search-field flex-grow flex items-center justify-center max-w-xl min-w-[150px] sm:min-w-[200px] md:min-w-[300px] relative">
+            <label for="search" class="absolute left-1 text-gray-400 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </label>
+            <input type="text" id="search" placeholder="Search..."
+              class="w-full pl-10 pr-4 py-1 border-2 border-[#fff1dc] bg-[#f6edd9] rounded-full focus:outline-none focus:ring-2 transition-all duration-300">
+        </div>
+
+          @if (!isLogged()) {
+            <div class="auth-buttons flex items-center space-x-2 flex-shrink-0">
+                <a routerLink="/register" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
+                    Sign Up
+                </a>
+                <a routerLink="/login" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">
+                    Login
+                </a>
+            </div>
+          } @else {
+            <div class="flex items-center space-x-4 flex-shrink-0">
+              <a routerLink="create-group" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create Group</a>
+              <div class="user-info relative flex gap-1 items-center">
+                <p class="text-gray-700 font-medium whitespace-nowrap">{{ currentUser()?.username }}</p>
+                <a routerLink="/group/userprofile"
+                (mouseenter)="openMenu()"
+                (mouseleave)="closeMenu()">
+                    <div class="img-holder size-9 rounded-full bg-[red]">g</div>
+                </a>
+                @if(showMenu){
+                  <div class="profile-menu absolute bottom-[-4.5rem] p-3 right-0 bg-[#fcf1d9] max-w-fit rounded-lg shadow-md"
+                    (mouseenter)="cancelClose()"
+                    (mouseleave)="closeMenu()">
+                    <a class="p-1 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150">View Profile</a>
+                    <p (click)="logout()" class="p-1 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 cursor-pointer">Logout</p>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+    </div>
+</header>

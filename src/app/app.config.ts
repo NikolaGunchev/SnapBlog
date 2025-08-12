@@ -6,10 +6,18 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideFirestore, getFirestore, connectFirestoreEmulator } from '@angular/fire/firestore';
 import { provideAuth, getAuth, connectAuthEmulator } from '@angular/fire/auth';
-import { provideFunctions, getFunctions, connectFunctionsEmulator } from '@angular/fire/functions';
-
+import {
+  provideFunctions,
+  getFunctions,
+  connectFunctionsEmulator,
+} from '@angular/fire/functions';
+import {
+  provideStorage,
+  getStorage,
+  connectStorageEmulator,
+} from '@angular/fire/storage';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDs0ytf2No4tLuMwBnueZT1VATLkn5KqHA',
@@ -20,30 +28,44 @@ const firebaseConfig = {
   appId: '1:636311296591:web:961442cc761399b860e83a',
 };
 
-const useEmulator = false;
+const useEmulator = true;
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
-    provideFirestore(() => getFirestore()),
+    // provideFirestore(() => getFirestore()),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      if (useEmulator) {
+        connectFirestoreEmulator(firestore, 'localhost', 8080);
+      }
+      return firestore;
+    }),
     // provideAuth(() => getAuth()),
-     provideAuth(() => {
+    provideAuth(() => {
       const auth = getAuth();
       if (useEmulator) {
-        connectAuthEmulator(auth, 'http://localhost:9099'); // Connect to the Auth emulator
+        connectAuthEmulator(auth, 'http://localhost:9099');
       }
       return auth;
     }),
     // provideFunctions(() => getFunctions())
-     provideFunctions(() => {
+    provideFunctions(() => {
       const functions = getFunctions();
-      // Check if you are in a local development environment
       if (useEmulator) {
         connectFunctionsEmulator(functions, 'localhost', 5001);
       }
       return functions;
-    })
+    }),
+    // provideStorage(()=> getStorage())
+    provideStorage(() => {
+      const storage = getStorage();
+      if (useEmulator) {
+        connectStorageEmulator(storage, 'localhost', 9199); 
+      }
+      return storage;
+    }),
   ],
 };

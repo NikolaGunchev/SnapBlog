@@ -1,9 +1,17 @@
 @if (combined$ | async; as data) {
   <div class="group-info  max-w-[1050px] mx-auto overflow-hidden pb-10">
-    <div class="banner min-h-[130px] bg-[red]"></div>
+    <div class="banner min-h-[130px] bg-gray-200">
+      @if (data.group?.bannerImgUrl) {
+        <img [src]="data.group?.bannerImgUrl" alt="Group Banner" class="w-full h-full object-cover">
+      }
+    </div>
     <div class="info flex justify-between px-4 py-1">
       <div class="left flex gap-3 items-center">
-        <div class="img-holder size-16 rounded-full bg-[blue] border-2 border-white">a</div>
+        <div class="img-holder size-16 rounded-full bg-[blue] border-2 border-white overflow-hidden">
+          @if (data.group?.logoImgUrl) {
+            <img [src]="data.group?.logoImgUrl" alt="Group Logo" class="w-full h-full object-cover">
+          }
+        </div>
         <h1 class="self-end text-2xl ">{{data.group?.name | transformName}}</h1>
       </div>
       <div class="right self-end flex gap-2">
