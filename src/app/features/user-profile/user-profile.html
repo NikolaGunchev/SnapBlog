@@ -1,0 +1,16 @@
+@if (homePosts$ |async; as homePosts) {
+<div
+  class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative"
+>
+  <div class="post-cotnainer col-span-12 lg:col-span-8">
+    
+  </div>
+  <div
+    class="side-content col-span-12 lg:col-span-4 flex flex-col gap-6 min-h-screen sticky"
+  >
+    <app-footer></app-footer>
+  </div>
+</div>
+}@else {
+<p>loading...</p>
+}

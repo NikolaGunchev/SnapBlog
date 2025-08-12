@@ -30,7 +30,10 @@ export const routes: Routes = [
     path: 'group/:name/post/:id',
     loadComponent: () => import('./features/post-details/post-details').then(c=>c.PostDetails),
   },
-  
+  {
+    path: 'user-profile/:id',
+    loadComponent: () => import('./features/user-profile/user-profile').then(c=>c.UserProfile),
+  },
   {
     path: '**',
     component: NotFound
