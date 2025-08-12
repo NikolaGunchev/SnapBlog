@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 
 @Component({
   selector: 'app-menu-icons',
@@ -7,6 +7,9 @@ import {Component} from '@angular/core';
   styleUrl: './menu-icons.css'
 })
 export class MenuIcons {
+  @Output() editClicked = new EventEmitter<void>(); 
+  @Output() deleteClicked = new EventEmitter<void>();
+
  showMenu = false;
 
   toggleMenu(): void {
@@ -15,5 +18,13 @@ export class MenuIcons {
 
   hideMenu(): void {
     this.showMenu = false;
+  }
+
+  onEdit(): void {
+    this.editClicked.emit(); 
+  }
+
+  onDelete(): void {
+    this.deleteClicked.emit();
   }
 }
