@@ -34,11 +34,11 @@
                     <div class="img-holder size-9 rounded-full bg-[red]">g</div>
                 </a>
                 @if(showMenu){
-                  <div class="profile-menu absolute bottom-[-4.5rem] p-3 right-0 bg-[#fcf1d9] max-w-fit rounded-lg shadow-md"
+                  <div class="profile-menu flex flex-col absolute bottom-[-5rem] right-0 bg-[#fcf1d9] rounded-lg shadow-md"
                     (mouseenter)="cancelClose()"
                     (mouseleave)="closeMenu()">
-                    <a class="p-1 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150">View Profile</a>
-                    <p (click)="logout()" class="p-1 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 cursor-pointer">Logout</p>
+                    <a class="p-2 min-w-fit hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 whitespace-nowrap">View Profile</a>
+                    <a (click)="logout()" class="p-2 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 cursor-pointer">Logout</a>
                   </div>
                 }
               </div>

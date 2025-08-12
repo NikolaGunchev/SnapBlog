@@ -1,27 +1,31 @@
 import { Component, inject, Input } from '@angular/core';
-import { AuthenticationService } from '../../core/services';
+import { AuthenticationService, UserService } from '../../core/services';
 import { Comment, Post } from '../../model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MenuIcons } from '../../shared/menu-icons/menu-icons';
 
 @Component({
   selector: 'app-comments',
-  imports: [TimeAgoPipe, ReactiveFormsModule],
+  imports: [TimeAgoPipe, ReactiveFormsModule, MenuIcons],
   templateUrl: './comments.html',
   styleUrl: './comments.css'
 })
 export class Comments {
+
   public authService=inject(AuthenticationService)
   private _snackBar = inject(MatSnackBar);
   private functions=inject(Functions)
+  private userService=inject(UserService)
 
   @Input() comments!: Comment[]
   @Input() post!:Post | undefined
 
   currentlyTyping=false
   commentControl=new FormControl('',[Validators.required])
+  currentUser=this.userService.userProfile
 
 
   openSnackBar(message: string) {
@@ -68,5 +72,13 @@ export class Comments {
     } catch (error) {
       console.error('Error calling postComment function:', error);
     }
+  }
+
+  handleEditClicked(comment: Comment): void {
+    console.log('Editing comment:', comment.id, 'Text:', comment.text);
+  }
+
+  handleDeleteClicked(comment: Comment): void {
+    console.log('Deleting comment:', comment.id);
   }
 }
