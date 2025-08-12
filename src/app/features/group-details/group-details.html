@@ -23,7 +23,7 @@
           @if (joined) {
             @if (data.group?.creatorId===currentUser()?.id) {
               <button class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Edit</button>
-              <button class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Delete</button>
+              <button (click)="deleteGroup(data.group!.id)" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Delete</button>
               
             }@else {
               <button class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Joined</button>

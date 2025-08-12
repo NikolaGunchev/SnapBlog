@@ -44,7 +44,7 @@
               <div class="right">
                 <app-menu-icons
                 (editClicked)="handleEditClicked(comment)"
-                (deleteClicked)="handleDeleteClicked(comment)"
+                (deleteClicked)="deleteComment(post!.id, comment.id)"
                 ></app-menu-icons>
               </div>
             }

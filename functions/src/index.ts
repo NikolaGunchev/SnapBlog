@@ -44,6 +44,7 @@ interface PostCommentResponse {
   error?: string;
 }
 
+
 exports.joinGroup = functions.https.onCall( async (request: functions.https.CallableRequest<{ groupId: string }>) => {
     const userId = request.auth?.uid;
     const { groupId } = request.data; 
@@ -284,3 +285,123 @@ exports.postComment = functions.https.onCall(
     }
   }
 );
+
+async function deleteCollection(collectionPath: string, batchSize: number): Promise<void> {
+  const collectionRef = firestore.collection(collectionPath);
+  const query = collectionRef.orderBy('__name__').limit(batchSize);
+
+  return new Promise((resolve, reject) => {
+    deleteQueryBatch(query, resolve).catch(reject);
+  });
+}
+
+async function deleteQueryBatch(query: any, resolve: any): Promise<void> {
+  const snapshot = await query.get();
+  if (snapshot.size === 0) {
+    return resolve();
+  }
+
+  const batch = firestore.batch();
+  snapshot.docs.forEach((doc: any) => {
+    batch.delete(doc.ref);
+  });
+
+  await batch.commit();
+  process.nextTick(() => deleteQueryBatch(query, resolve));
+}
+
+exports.deleteGroup = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ groupId: string }>) => {
+  const userId = request.auth?.uid;
+  const { groupId } = request.data;
+
+  if (!userId) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+  }
+
+  const groupRef = firestore.collection('groups').doc(groupId);
+  const creatorRef = firestore.collection('users').doc(userId);
+
+  await firestore.runTransaction(async (transaction) => {
+    const groupDoc = await transaction.get(groupRef);
+    if (!groupDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'Group not found.');
+    }
+    
+    const groupData = groupDoc.data();
+    if (groupData?.creatorId !== userId) {
+      throw new functions.https.HttpsError('permission-denied', 'Only the group creator can delete the group.');
+    }
+
+    transaction.delete(groupRef);
+
+    transaction.update(creatorRef, {
+      groups: admin.firestore.FieldValue.arrayRemove(groupId)
+    });
+  });
+
+  await deleteCollection(`groups/${groupId}/posts`, 100);
+
+  return { success: true };
+});
+
+// ----------------------------------------------------
+
+exports.deletePost = functions.https.onCall(async (request: functions.https.CallableRequest<{ postId: string }>) => {
+  const userId = request.auth?.uid;
+  const { postId } = request.data;
+
+  if (!userId) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+  }
+
+  const postRef = firestore.collection('posts').doc(postId);
+  
+  await firestore.runTransaction(async (transaction) => {
+    const postDoc = await transaction.get(postRef);
+    if (!postDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'Post not found.');
+    }
+    
+    const postData = postDoc.data();
+    if (postData?.creatorId !== userId) {
+      throw new functions.https.HttpsError('permission-denied', 'Only the post creator can delete the post.');
+    }
+
+    transaction.delete(postRef);
+    
+    const userRef = firestore.collection('users').doc(userId);
+    transaction.update(userRef, { posts: admin.firestore.FieldValue.arrayRemove(postId) });
+  });
+
+  await deleteCollection(`posts/${postId}/comments`, 100);
+
+  return { success: true };
+});
+
+// ----------------------------------------------------
+
+exports.deleteComment = functions.https.onCall(async (request: functions.https.CallableRequest<{ postId: string; commentId: string }>) => {
+  const userId = request.auth?.uid;
+  const { postId, commentId } = request.data;
+
+  if (!userId) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to delete a comment.');
+  }
+
+  const commentRef = firestore.collection('posts').doc(postId).collection('comments').doc(commentId);
+  
+  const commentDoc = await commentRef.get();
+  if (!commentDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'Comment not found.');
+  }
+  
+  const commentData = commentDoc.data();
+  if (commentData?.userId !== userId) {
+    throw new functions.https.HttpsError('permission-denied', 'Only the comment creator can delete the comment.');
+  }
+
+  await commentRef.delete();
+
+  return { success: true };
+});

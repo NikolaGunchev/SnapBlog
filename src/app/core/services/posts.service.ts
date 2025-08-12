@@ -1,8 +1,9 @@
 import { inject, Injectable, signal } from "@angular/core";
 import { collection, collectionData, CollectionReference, Firestore, query, where,doc, docData  } from "@angular/fire/firestore";
-import { map, Observable, take } from "rxjs";
+import { firstValueFrom, map, Observable, take } from "rxjs";
 import { Post } from "../../model";
 import { postConverter } from "./firestoreConverter.service";
+import { Functions, httpsCallableData } from "@angular/fire/functions";
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ import { postConverter } from "./firestoreConverter.service";
 export class PostsService{
   private firestore = inject(Firestore)
   private postsCollection: CollectionReference
+  private functions=inject(Functions)
 
   constructor(){
     this.postsCollection=collection(this.firestore,'posts')
@@ -48,4 +50,10 @@ export class PostsService{
     })
   );
 }
+
+async deletePost(postId: string): Promise<{ success: boolean; error?: string }> {
+    const callable = httpsCallableData<any, { success: boolean; error?: string }>(this.functions, 'deletePost');
+    const result = await firstValueFrom(callable({ postId }));
+    return result;
+  }
 }

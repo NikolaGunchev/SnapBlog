@@ -22,7 +22,10 @@
           </div>
           @if (data.post?.userId===currentUser()?.id) {
             <div class="user-options-container">
-              <app-menu-icons></app-menu-icons>
+              <app-menu-icons
+              (editClicked)="handleEditClicked(data.post!)"
+                (deleteClicked)="deletePost(data.post!.id)"
+              ></app-menu-icons>
             </div>
           }
         </div>
