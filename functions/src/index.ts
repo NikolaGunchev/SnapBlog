@@ -33,6 +33,17 @@ interface CreatePostResponse {
   error?: string;
 }
 
+interface PostCommentData {
+  postId: string;
+  text: string;
+}
+
+interface PostCommentResponse {
+  success: boolean;
+  commentId?: string;
+  error?: string;
+}
+
 exports.joinGroup = functions.https.onCall( async (request: functions.https.CallableRequest<{ groupId: string }>) => {
     const userId = request.auth?.uid;
     const { groupId } = request.data; 
@@ -221,6 +232,56 @@ exports.createPost = functions.https.onCall(
     } catch (error) {
       console.error('Error creating post:', error);
       throw new functions.https.HttpsError('internal', 'Failed to create post.');
+    }
+  }
+);
+
+exports.postComment = functions.https.onCall(
+  async (request: functions.https.CallableRequest<PostCommentData>): Promise<PostCommentResponse> => {
+    const userId = request.auth?.uid;
+    const { postId, text } = request.data;
+
+
+    if (!userId) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to post a comment.');
+    }
+
+    if (!postId || typeof postId !== 'string' || postId.trim() === '') {
+      throw new functions.https.HttpsError('invalid-argument', 'A valid postId is required.');
+    }
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      throw new functions.https.HttpsError('invalid-argument', 'Comment text cannot be empty.');
+    }
+
+    const postsCollectionRef = admin.firestore().collection('posts');
+    const postRef = postsCollectionRef.doc(postId);
+
+    try {
+      const postDoc = await postRef.get();
+      if (!postDoc.exists) {
+        throw new functions.https.HttpsError('not-found', 'The post you are trying to comment on does not exist.');
+      }
+
+      // Create the comment data
+      const newCommentData = {
+        userId: userId,
+        postId: postId,
+        text: text.trim(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        likes:0
+      };
+
+      const commentRef = await postRef.collection('comments').add(newCommentData);
+
+      return { success: true, commentId: commentRef.id };
+
+    } catch (error: any) {
+      console.error('Error posting comment:', error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      throw new functions.https.HttpsError('internal', 'Failed to post comment.');
     }
   }
 );

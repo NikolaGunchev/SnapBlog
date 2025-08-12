@@ -21,10 +21,11 @@ import { Comments } from '../comments/comments';
 export class PostDetails implements OnInit{
   private postService=inject(PostsService)
   private userService=inject(UserService)
-  public authService=inject(AuthenticationService)
   private commentsService=inject(CommentsService)
   
+  public authService=inject(AuthenticationService)
   public router=inject(ActivatedRoute)
+  
   combined$!:Observable<{post:Post | undefined; comments:Comment[]}>
   readonly currentUser=this.userService.userProfile
 

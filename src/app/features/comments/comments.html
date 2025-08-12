@@ -6,8 +6,26 @@
         class="absolute inset-0 cursor-pointer z-10 rounded-full"
       ></div>
     }
-    <input type="text" id="comment" placeholder="Type a comment" [disabled]="!authService.isLoggedIn()"
+    @if (!currentlyTyping) {
+      <input (click)="startTyping()" type="text" id="comment" placeholder="Type a comment" [disabled]="!authService.isLoggedIn()"
       class="w-full pl-10 pr-4 py-1 border-2 border-[#fff1dc] bg-[#f6edd9] rounded-full focus:outline-none transition-all duration-300">
+    }@else {
+      <div class="w-full flex flex-col">
+        <textarea 
+         id="typingComment" 
+         [formControl]="commentControl"
+         placeholder="Write a comment..."
+         class="w-full px-4 py-1 border-2 border-[#fff1dc] bg-[#f6edd9] rounded-xl outline-none resize-none focus:border-[#76a7a4] focus:ring-[#76a7a4]"></textarea>
+         @if (commentControl.invalid && commentControl.touched) {
+          <p class="text-[#FF0000]">Comment cannot be empty</p>
+         }
+        <div class="action-buttons self-end flex gap-2 mt-1">
+          <button (click)="cancelTyping()"  class="max-w-fit bg-gray-200 text-black p-2 rounded-full">Cancel</button>
+          <button (click)="sendComment()" [disabled]="commentControl.invalid" class="max-w-fit bg-[#5E8F8C] text-white p-2 rounded-full">Send</button>
+        </div>
+      </div>
+    }
+    
   </div>
 
   <div class="comments flex flex-col gap-5">
@@ -40,6 +58,5 @@
           </div>
       </div>
     }
-    
   </div>
 </div>
