@@ -3,7 +3,7 @@
     @if (!authService.isLoggedIn()) {
       <div
         (click)="openSnackBar('Please login first to post a comment')"
-        class="absolute inset-0 cursor-pointer z-10 rounded-full"
+        class="absolute inset-0 z-10 rounded-full"
       ></div>
     }
     @if (!currentlyTyping) {
@@ -32,7 +32,7 @@
     @for (comment of comments; track $index) {
       <div class="comment p-1">
           <div class="info-container flex content-center justify-between">
-            <div class="left">
+            <div class="left flex">
               <div class="user-info flex gap-1">
                   <div class="img-holder size-7 rounded-full bg-[red]"></div>
                   <p class="text-xs content-center">{{comment.creatorName}}</p>

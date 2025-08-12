@@ -1,9 +1,10 @@
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { doc, docData, Firestore } from '@angular/fire/firestore';
 import { AuthenticationService } from './authentication.service';
 import { User } from '../../model';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of, switchMap, tap } from 'rxjs';
 import { userConverter } from './firestoreConverter.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -16,35 +17,38 @@ export class UserService {
 
   public userProfile = this._userProfile.asReadonly();
 
-  constructor() {
-    effect(() => {
-      const firebaseUser = this.authService.currentUser();
-
-      if (firebaseUser) {
-        const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-
-        docData(userDocRef).subscribe((profile) => {
-          if (profile) {
-            const userModel: User = {
-              id: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              username: (profile as any).username,
-              created_at: (profile as any).created_at.toDate(),
-              groups: (profile as any).groups || [],
-              posts: (profile as any).posts || [],
-              comments: (profile as any).comments || [],
-              likedPosts: (profile as any).likedPosts || [],
-              dislikedPosts: (profile as any).likedPosts || []
-            };
-            this._userProfile.set(userModel);
-          } else {
-            this._userProfile.set(null);
-          }
-        });
-      } else {
-        this._userProfile.set(null);
-      }
-    });
+ constructor() {
+    const user$ = toObservable(this.authService.currentUser);
+    
+    user$.pipe(
+      switchMap((firebaseUser) => {
+        if (firebaseUser) {
+          const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+          return docData(userDocRef).pipe(
+            tap((profile) => {
+                const userModel: User = {
+                  id: firebaseUser.uid,
+                  email: firebaseUser.email || '',
+                  username: (profile as any).username,
+                  created_at: (profile as any).created_at.toDate(),
+                  groups: (profile as any).groups || [],
+                  posts: (profile as any).posts || [],
+                  comments: (profile as any).comments || [],
+                  likedPosts: (profile as any).likedPosts || [],
+                  dislikedPosts: (profile as any).dislikedPosts || []
+                };
+                this._userProfile.set(userModel);
+            })
+          );
+        } else {
+          return of(null).pipe(
+            tap(() => {
+              this._userProfile.set(null);
+            })
+          );
+        }
+      })
+    ).subscribe();
   }
 
   getUserById(userId: string): Observable<User | undefined> {
