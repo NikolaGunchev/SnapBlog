@@ -20,6 +20,19 @@ interface CreateGroupResponse {
   error?: string;
 }
 
+interface CreatePostData {
+  groupId: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+}
+
+interface CreatePostResponse {
+  success: boolean;
+  postId?: string;
+  error?: string;
+}
+
 exports.joinGroup = functions.https.onCall( async (request: functions.https.CallableRequest<{ groupId: string }>) => {
     const userId = request.auth?.uid;
     const { groupId } = request.data; 
@@ -169,6 +182,45 @@ exports.createGroup = functions.https.onCall(
         return { success: false, error: error.message };
       }
       return { success: false, error: 'Failed to create group. Internal server error.' };
+    }
+  }
+);
+
+exports.createPost = functions.https.onCall(
+  async (request: functions.https.CallableRequest<CreatePostData>): Promise<CreatePostResponse> => {
+    const userId = request.auth?.uid;
+    const { groupId, title, content, imageUrl } = request.data;
+
+    if (!userId) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to create a post.');
+    }
+    if (!groupId || typeof groupId !== 'string') {
+      throw new functions.https.HttpsError('invalid-argument', 'A valid groupId is required.');
+    }
+    if (!title || typeof title !== 'string' || title.length < 5) {
+      throw new functions.https.HttpsError('invalid-argument', 'Post title is required and must be at least 5 characters.');
+    }
+
+    if (!imageUrl && !content) {
+      throw new functions.https.HttpsError('invalid-argument', 'Either an image or content must be provided for a post.');
+    }
+
+    try {
+      const newPostData = {
+        groupId,
+        title,
+        content: content || null,
+        imageUrl: imageUrl || null,
+        creatorId: userId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      const postRef = await admin.firestore().collection('posts').add(newPostData);
+
+      return { success: true, postId: postRef.id };
+    } catch (error) {
+      console.error('Error creating post:', error);
+      throw new functions.https.HttpsError('internal', 'Failed to create post.');
     }
   }
 );

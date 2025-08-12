@@ -1,0 +1,68 @@
+<div class="flex h-screen items-center justify-center ">
+  <div class="mx-auto w-full max-w-md rounded-lg bg-[#eae4d9] px-6 py-10 shadow-lg">
+    <div class="mb-8 text-center">
+      <h2 class="text-3xl font-bold text-[#3d3a33]">Create your post</h2>
+    </div>
+    <form class="login space-y-6" [formGroup]="postForm" (ngSubmit)="onSubmit()">
+
+      <div class="field">
+        <label for="title" class="text-[#3d3a33]">Title</label>
+        <input
+          [class.border-red]="isTitleInvalid"
+          type="text"
+          id="title"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+          formControlName="title"
+        />
+      </div>
+      @if (isTitleInvalid) {
+      <p class="text-[#FF0000]">{{titleErrorMessage}}</p>
+      }
+
+      <div class="filed">
+        <label for="content" class="text-[#3d3a33]">Content</label>
+        <textarea 
+        [class.border-red]="isContentInvalid"
+        name="content" 
+        id="content" 
+        class="resize-none block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+        formControlName="content"></textarea>
+      </div>
+      @if(isContentInvalid){
+      <p class="text-[#FF0000]">{{contentErrorMessage}}</p>
+      }
+
+
+      <div class="field">
+        <label for="image" class="text-[#3d3a33]">Image<span class="text-xs opacity-60">(optional)</span></label>
+        <input
+        type="file" 
+        id="image" 
+        formControlName="image"
+        (change)="onFileSelected($event)" accept="image/*"
+          class="mt-1 block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-[#76a7a4] file:text-white
+                  hover:file:bg-[#5b8a87]">
+
+          @if (selectedImagePreview) {
+            <div class="mt-2 w-28 h-28 relative group">
+              <img [src]="selectedImagePreview" alt="Image Preview" class="w-full h-full object-cover rounded-md shadow-sm">
+              <button (click)="removeImage()" 
+              class="absolute top-1 right-1 bg-red-500 text-white rounded-full size-4 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              X</button>
+            </div>
+          }
+      </div>
+
+      <button
+      type="submit"
+      [disabled]="!postForm.valid"
+        class="w-full rounded-md bg-[#76a7a4] py-2 text-lg font-semibold text-white transition-colors duration-200 hover:bg-[#5b8a87] focus:outline-none focus:ring-4 focus:ring-[#76a7a4] focus:ring-opacity-50"
+        >
+        Post
+      </button>
+    </form>
+  </div>

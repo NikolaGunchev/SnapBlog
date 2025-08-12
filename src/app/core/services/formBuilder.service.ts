@@ -88,17 +88,22 @@ export class FormBuilderService {
             logoImg: [''],
             bannerImg: [''],
           }),
-          tags: [
-            '',
-            [Validators.required, this.minTagsValidator],
-          ],
+          tags: ['', [Validators.required, this.minTagsValidator]],
           rules: [''],
+        });
+        break;
+
+      case 5:
+        //post
+        form = this.formBuilder.group({
+          title: ['', [Validators.required, Validators.minLength(5)]],
+          content: ['', [Validators.required, Validators.minLength(5)]],
+          image: [''],
         });
         break;
       default:
         throw new Error(`Unsupported form number: ${number}`);
     }
-
     return form;
   }
 
@@ -154,6 +159,14 @@ export class FormBuilderService {
     return form.get('rules');
   }
 
+  getTitleControl(form: FormGroup) {
+    return form.get('title');
+  }
+
+  getContentControl(form: FormGroup) {
+    return form.get('content');
+  }
+
   isUsernameError(form: FormGroup): boolean {
     const control = this.getUsernameControl(form);
     return (control?.invalid && (control?.dirty || control?.touched)) || false;
@@ -187,18 +200,28 @@ export class FormBuilderService {
     return (control?.invalid && (control?.dirty || control?.touched)) || false;
   }
 
-  isNameError(form:FormGroup):boolean{
-    const control=this.getNameControl(form);
+  isNameError(form: FormGroup): boolean {
+    const control = this.getNameControl(form);
     return (control?.invalid && (control?.dirty || control?.touched)) || false;
   }
 
-  isDescriptionError(form:FormGroup):boolean{
-    const control=this.getDescriptionControl(form);
+  isDescriptionError(form: FormGroup): boolean {
+    const control = this.getDescriptionControl(form);
     return (control?.invalid && (control?.dirty || control?.touched)) || false;
   }
-  
-  isTagsError(form:FormGroup):boolean{
-    const control=this.getTagsControl(form);
+
+  isTagsError(form: FormGroup): boolean {
+    const control = this.getTagsControl(form);
+    return (control?.invalid && (control?.dirty || control?.touched)) || false;
+  }
+
+  isTitleError(form: FormGroup): boolean {
+    const control = this.getTitleControl(form);
+    return (control?.invalid && (control?.dirty || control?.touched)) || false;
+  }
+
+  isContentError(form: FormGroup): boolean {
+    const control = this.getTitleControl(form);
     return (control?.invalid && (control?.dirty || control?.touched)) || false;
   }
 
@@ -272,7 +295,7 @@ export class FormBuilderService {
     return '';
   }
 
-    getNameErrorMessage(form: FormGroup): string {
+  getNameErrorMessage(form: FormGroup): string {
     const control = this.getNameControl(form);
 
     if (control?.errors?.['required']) {
@@ -284,7 +307,7 @@ export class FormBuilderService {
     return '';
   }
 
-    getDescriptionErrorMessage(form: FormGroup): string {
+  getDescriptionErrorMessage(form: FormGroup): string {
     const control = this.getDescriptionControl(form);
 
     if (control?.errors?.['required']) {
@@ -293,14 +316,38 @@ export class FormBuilderService {
     return '';
   }
 
-    getTagsErrorMessage(form: FormGroup): string {
+  getTagsErrorMessage(form: FormGroup): string {
     const control = this.getTagsControl(form);
 
     if (control?.errors?.['required']) {
       return 'Tags are required';
     }
-    if(control?.errors?.['lessTags']){
-      return 'Please enter atleast 3 tags'
+    if (control?.errors?.['lessTags']) {
+      return 'Please enter atleast 3 tags';
+    }
+    return '';
+  }
+
+  getTitleErrorMessage(form: FormGroup): string {
+    const control = this.getTitleControl(form);
+
+    if (control?.errors?.['required']) {
+      return 'Title is required';
+    }
+    if (control?.errors?.['minlength']) {
+      return 'Title should have at least 5 symbols!';
+    }
+    return '';
+  }
+
+  getContentErrorMessage(form: FormGroup): string {
+    const control = this.getContentControl(form);
+
+    if (control?.errors?.['required']) {
+      return 'Content is required';
+    }
+    if (control?.errors?.['minlength']) {
+      return 'Content should have at least 5 symbols!';
     }
     return '';
   }
@@ -344,21 +391,23 @@ export class FormBuilderService {
     return null;
   }
 
-private minTagsValidator(tagsControl: AbstractControl): ValidationErrors | null {
-  const tagsValue = tagsControl.value;
+  private minTagsValidator(
+    tagsControl: AbstractControl
+  ): ValidationErrors | null {
+    const tagsValue = tagsControl.value;
 
-  if (!tagsValue || tagsValue.trim() === '') {
-    return { lessTags: true };
+    if (!tagsValue || tagsValue.trim() === '') {
+      return { lessTags: true };
+    }
+
+    const tags = tagsValue.trim().split(' ');
+
+    const numberOfTags = tags.length;
+
+    if (numberOfTags < 3) {
+      return { lessTags: true };
+    }
+
+    return null;
   }
-
-  const tags = tagsValue.trim().split(' ');
-  
-  const numberOfTags = tags.length;
-
-  if (numberOfTags < 3) {
-    return { lessTags: true };
-  }
-
-  return null;
-}
 }

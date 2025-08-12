@@ -15,12 +15,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/authentication/register/register').then(c=>c.Register),
   },
   {
+    path:'create-group',
+    loadComponent: () => import('./features/create-group/create-group').then(c=>c.CreateGroup),
+  },
+  {
     path: 'group/:name',
     loadComponent: () => import('./features/group-details/group-details').then(c=>c.GroupDetails),
   },
   {
-    path:'create-group',
-    loadComponent: () => import('./features/create-group/create-group').then(c=>c.CreateGroup),
+    path: 'group/:name/create-post',
+    loadComponent: () => import('./features/create-post/create-post').then(c=>c.CreatePost),
   },
   {
     path: 'group/:name/post/:id',
