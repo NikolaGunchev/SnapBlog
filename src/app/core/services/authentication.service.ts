@@ -45,6 +45,8 @@ export class AuthenticationService {
           groups: [],
           posts: [],
           comments: [],
+          likedPosts:[],
+          dislikedPosts:[]
         };
 
         const userDocRef = doc(this.firestore, `users/${uid}`);

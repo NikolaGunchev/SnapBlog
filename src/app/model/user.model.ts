@@ -9,4 +9,5 @@ export interface User{
   posts:string[],
   comments:string[],
   likedPosts:string[]
+  dislikedPosts:string[]
 }

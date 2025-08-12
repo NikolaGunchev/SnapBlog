@@ -33,6 +33,7 @@ export class GroupDetails {
 
 
   public joined:boolean | undefined
+  public currentUser=this.userService.userProfile
   
   combined$!: Observable<{ group: Group | undefined; posts: Post[] }>;
   group$!:Observable<Group |undefined>

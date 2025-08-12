@@ -20,7 +20,7 @@
                 </div>
             </div>
           </div>
-          @if (data.post?.id === currentUser()?.id) {
+          @if (data.post?.userId===currentUser()?.id) {
             <div class="user-options-container">
               <app-menu-icons></app-menu-icons>
             </div>

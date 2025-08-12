@@ -33,7 +33,8 @@ export class UserService {
               groups: (profile as any).groups || [],
               posts: (profile as any).posts || [],
               comments: (profile as any).comments || [],
-              likedPosts: (profile as any).likedPosts || []
+              likedPosts: (profile as any).likedPosts || [],
+              dislikedPosts: (profile as any).likedPosts || []
             };
             this._userProfile.set(userModel);
           } else {

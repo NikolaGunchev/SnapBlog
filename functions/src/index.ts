@@ -263,13 +263,12 @@ exports.postComment = functions.https.onCall(
         throw new functions.https.HttpsError('not-found', 'The post you are trying to comment on does not exist.');
       }
 
-      // Create the comment data
+
       const newCommentData = {
         userId: userId,
         postId: postId,
         text: text.trim(),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        likes:0
       };
 
       const commentRef = await postRef.collection('comments').add(newCommentData);
