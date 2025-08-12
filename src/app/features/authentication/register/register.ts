@@ -3,6 +3,7 @@ import { AuthenticationService } from '../../../core/services';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilderService } from '../../../core/services/formBuilder.service';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-register',
@@ -26,17 +27,25 @@ export class Register {
       const { username, email, password, rePassword } =
         this.formBuilderService.getRegisterFormValue(this.registerForm);
 
-      this.authService.register( email, password,username).subscribe({
+      this.authService.register(email, password, username).subscribe({
         next: () => {
           this.router.navigate(['']);
         },
         error: (err) => {
-          console.log(err);
-          
+          this.openSnackBar(err.message)
+
           this.formBuilderService.markFormGroupTouched(this.registerForm);
         },
       });
     }
+  }
+
+  private _snackBar = inject(MatSnackBar);
+
+  openSnackBar(message: string) {
+    this._snackBar.open(message, 'close', {
+      duration: 3000,
+    });
   }
 
   get isUsernameInvalid(): boolean {

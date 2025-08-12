@@ -5,13 +5,13 @@ import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
 import { Dropdown } from "../../shared/dropdown/dropdown";
 import { PostItem } from "../post-item/post-item";
 import { CommonModule, DatePipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TransformNamePipe } from '../../shared/pipes/transform-name-pipe';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-group-details',
-  imports: [Dropdown, PostItem, CommonModule, TransformNamePipe, DatePipe],
+  imports: [Dropdown, PostItem, CommonModule, TransformNamePipe, DatePipe, RouterLink],
   templateUrl: './group-details.html',
   styleUrl: './group-details.css',
 })

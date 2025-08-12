@@ -28,7 +28,7 @@ const firebaseConfig = {
   appId: '1:636311296591:web:961442cc761399b860e83a',
 };
 
-const useEmulator = true;
+const useEmulator = false;
 
 export const appConfig: ApplicationConfig = {
   providers: [

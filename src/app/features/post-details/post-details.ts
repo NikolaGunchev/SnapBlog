@@ -10,10 +10,11 @@ import { CommonModule } from '@angular/common';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import { CommentsService } from '../../core/services/comments.service';
+import { Comments } from '../comments/comments';
 
 @Component({
   selector: 'app-post-details',
-  imports: [Footer, SideGroup, MenuIcons, CommonModule, TimeAgoPipe, RouterLink],
+  imports: [Footer, SideGroup, MenuIcons, CommonModule, TimeAgoPipe, RouterLink, Comments],
   templateUrl: './post-details.html',
   styleUrl: './post-details.css'
 })

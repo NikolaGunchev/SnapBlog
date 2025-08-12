@@ -60,7 +60,8 @@
       </div>
     </div>
   
-    <div class="comments-section mt-5">
+    <app-comments [comments]="data.comments"></app-comments>
+    <!-- <div class="comments-section mt-5">
       <div class="comment-field flex-grow flex items-center justify-center  min-w-[150px] sm:min-w-[200px] md:min-w-[300px] relative mb-5">
         @if (!authService.isLoggedIn()) {
           <div
@@ -104,7 +105,7 @@
         }
         
       </div>
-    </div>
+    </div> -->
   </article>
     </div>
     <div class="side-content col-span-12 lg:col-span-4 flex flex-col min-h-screen sticky gap-6">

@@ -3,6 +3,7 @@ import { AuthenticationService } from '../../../core/services';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilderService } from '../../../core/services/formBuilder.service';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-login',
@@ -37,6 +38,14 @@ export class Login {
     return this.formBuilderService.getLoginPasswordErrorMessage(this.loginForm)
   }
 
+    private _snackBar = inject(MatSnackBar);
+
+  openSnackBar(message: string) {
+    this._snackBar.open(message, "close", {
+      duration:3000
+    });
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
@@ -46,7 +55,7 @@ export class Login {
           this.router.navigate(['']);
         },
         error: (err) => {
-          console.log(err);
+          this.openSnackBar(err.message)
           
           this.formBuilderService.markFormGroupTouched(this.loginForm);
         },
