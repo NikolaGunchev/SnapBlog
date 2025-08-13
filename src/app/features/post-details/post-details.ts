@@ -52,8 +52,10 @@ export class PostDetails implements OnInit{
     )
   }
 
-  handleEditClicked(post:Post): void {
-    console.log('Editing post:', post.id, 'Text:', post.content);
+  editPage(groupName: string | undefined, postId: string | undefined) {
+    this.navigateRoute.navigate(['/group', groupName, 'create-post'], {
+      queryParams: { edit: postId },
+    });
   }
   
   async deletePost(postId:string):Promise<void>{

@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilderService, GroupsService } from '../../core/services';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilderService, GroupsService, PostsService } from '../../core/services';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ImageUploadService } from '../../core/services/imageUpload.service';
 import { Functions, httpsCallable } from '@angular/fire/functions';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom, Observable } from 'rxjs';
-import { Group } from '../../model';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { Group, Post } from '../../model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -14,12 +14,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './create-post.html',
   styleUrl: './create-post.css'
 })
-export class CreatePost {
+export class CreatePost implements OnInit, OnDestroy {
   private formBuilderService=inject(FormBuilderService)
   private router=inject(ActivatedRoute)
   private groupService=inject(GroupsService)
   private imagesService=inject(ImageUploadService)
   private functions=inject(Functions)
+  private postService=inject(PostsService)
+  private subscriptions!: Subscription;
 
   selectedFile: File | null = null;
   selectedImagePreview: string | ArrayBuffer | null = null;
@@ -32,8 +34,25 @@ export class CreatePost {
   constructor(){
     this.postForm=this.formBuilderService.createForm(5)
     this.groupDetails$=this.groupService.getGroupByName(this.groupName!)
+  }
 
+  postId = this.router.snapshot.queryParamMap.get('edit');
+  isEditing = this.postId !== null ? true : false;
+  postDetails$!: Observable<Post | undefined>;
 
+  ngOnInit(): void {
+    if (this.postId !== null) {
+      this.postDetails$ = this.postService.getPostById(this.postId);
+
+      this.subscriptions = this.postDetails$.subscribe((post) => {
+        const data = {
+          title:post?.title,
+          content:post?.content
+        };
+
+        this.postForm.patchValue(data);
+      });
+    }
   }
 
   get isTitleInvalid():boolean{
@@ -121,6 +140,12 @@ export class CreatePost {
     const fileInput = document.getElementById('groupImg') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
     }
   }
 }

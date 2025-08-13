@@ -31,8 +31,8 @@ export class GroupDetails {
   private postService = inject(PostsService);
   private userService = inject(UserService);
   private router = inject(ActivatedRoute);
-  private navigateRoute=inject(Router)
-  
+  private navigateRoute = inject(Router);
+
   public groupService = inject(GroupsService);
   public authService = inject(AuthenticationService);
 
@@ -78,26 +78,26 @@ export class GroupDetails {
     );
   }
 
-  async deleteGroup(groupId:string):Promise<void>{
-    const confirmed = confirm("Are you sure you want to delete this gorup!")
+  async deleteGroup(groupId: string): Promise<void> {
+    const confirmed = confirm('Are you sure you want to delete this gorup!');
     if (confirmed) {
       try {
-        const result = await this.groupService.deleteGroup(groupId)
+        const result = await this.groupService.deleteGroup(groupId);
         if (result.success) {
-          this.openSnackBar("Successfully deleted the group")
-          this.navigateRoute.navigate(['/'])
+          this.openSnackBar('Successfully deleted the group');
+          this.navigateRoute.navigate(['/']);
         } else {
-          this.openSnackBar(`Failed to delete group: ${result.error}`)
+          this.openSnackBar(`Failed to delete group: ${result.error}`);
         }
       } catch (error) {
-        console.error("Something happend while deleting the group")
+        console.error('Something happend while deleting the group');
       }
     }
   }
 
-  editPage(groupId:string | undefined){
+  editPage(groupId: string | undefined) {
     this.navigateRoute.navigate(['/create-group'], {
-  queryParams: { edit: groupId }
-})
+      queryParams: { edit: groupId },
+    });
   }
 }

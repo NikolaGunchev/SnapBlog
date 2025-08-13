@@ -23,7 +23,7 @@
           @if (data.post?.userId===currentUser()?.id) {
             <div class="user-options-container">
               <app-menu-icons
-              (editClicked)="handleEditClicked(data.post!)"
+              (editClicked)="editPage(groupName, data.post?.id)"
                 (deleteClicked)="deletePost(data.post!.id)"
               ></app-menu-icons>
             </div>
