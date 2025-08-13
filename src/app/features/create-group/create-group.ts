@@ -3,7 +3,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FormBuilderService, GroupsService } from '../../core/services';
 import { ImageUploadService } from '../../core/services/imageUpload.service';
 import { Functions, httpsCallable } from '@angular/fire/functions';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { Group } from '../../model';
 
@@ -20,11 +20,14 @@ export class CreateGroup implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private groupService = inject(GroupsService);
   private subscriptions!: Subscription;
+  private navigateRouter=inject(Router)
 
   selectedFileLogo: File | null = null;
   selectedFileBanner: File | null = null;
   selectedImagePreviewLogo: string | ArrayBuffer | null = null;
   selectedImagePreviewBanner: string | ArrayBuffer | null = null;
+  existingLogoUrl: string | null = null;
+  existingBannerUrl: string | null = null;
 
   groupForm: FormGroup;
 
@@ -41,6 +44,12 @@ export class CreateGroup implements OnInit, OnDestroy {
       this.groupDetails$ = this.groupService.getGroupById(this.groupId);
 
       this.subscriptions = this.groupDetails$.subscribe((group) => {
+        this.existingLogoUrl = group?.logoImgUrl || null;
+        this.existingBannerUrl = group?.bannerImgUrl || null;
+
+        this.selectedImagePreviewLogo = group?.logoImgUrl || null;
+        this.selectedImagePreviewBanner = group?.bannerImgUrl || null;
+
         const data = {
           name: group?.name,
           description: group?.description,
@@ -83,54 +92,108 @@ export class CreateGroup implements OnInit, OnDestroy {
       return;
     }
 
-    let logoImgUrl: string | undefined;
-    let bannerImgUrl: string | undefined;
-
+    if (!this.isEditing) {
+      let logoImgUrl: string | undefined;
+      let bannerImgUrl: string | undefined;
+  
+      try {
+        if (this.selectedFileLogo) {
+          logoImgUrl = await this.imagesService.uploadImage(
+            this.selectedFileLogo,
+            'group-images/logos/'
+          );
+        }
+  
+        if (this.selectedFileBanner) {
+          bannerImgUrl = await this.imagesService.uploadImage(
+            this.selectedFileBanner,
+            'group-images/banners/'
+          );
+        }
+  
+        const formData = this.groupForm.value;
+        const dataToSend = {
+          name: formData.name,
+          description: formData.description,
+          tags: formData.tags,
+          rules: formData.rules,
+          logoImgUrl: logoImgUrl,
+          bannerImgUrl: bannerImgUrl,
+        };
+  
+        const createGroupCallable = httpsCallable<any, any>(
+          this.function,
+          'CreateGroup'
+        );
+        const result = await createGroupCallable(dataToSend);
+  
+        console.log('Cloud Function result:', result.data);
+        if (result.data.success) {
+          console.log(
+            'Group created successfully! Group ID:',
+            result.data.groupId
+          );
+        } else {
+          console.error(
+            'Failed to create group via Cloud Function:',
+            result.data.error
+          );
+        }
+      } catch (error) {
+        console.error('Error during group creation process:', error);
+      }
+    }else{
     try {
+      const formData = this.groupForm.value;
+      let newLogoUrl: string | null | undefined;
+      let newBannerUrl: string | null | undefined;
+
       if (this.selectedFileLogo) {
-        logoImgUrl = await this.imagesService.uploadImage(
+        newLogoUrl = await this.imagesService.uploadImage(
           this.selectedFileLogo,
           'group-images/logos/'
         );
+      } else if (this.existingLogoUrl) {
+        newLogoUrl = this.existingLogoUrl;
+      } else {
+        newLogoUrl = null;
       }
 
       if (this.selectedFileBanner) {
-        bannerImgUrl = await this.imagesService.uploadImage(
+        newBannerUrl = await this.imagesService.uploadImage(
           this.selectedFileBanner,
           'group-images/banners/'
         );
+      } else if (this.existingBannerUrl) {
+        newBannerUrl = this.existingBannerUrl;
+      } else {
+        newBannerUrl = null;
       }
 
-      const formData = this.groupForm.value;
-      const dataToSend = {
+      const editData = {
+        groupId: this.groupId!,
         name: formData.name,
         description: formData.description,
         tags: formData.tags,
         rules: formData.rules,
-        logoImgUrl: logoImgUrl,
-        bannerImgUrl: bannerImgUrl,
+        newLogoImgUrl: newLogoUrl,
+        newBannerImgUrl: newBannerUrl,
       };
 
-      const createGroupCallable = httpsCallable<any, any>(
+      const editGroupCallable = httpsCallable<any, any>(
         this.function,
-        'CreateGroup'
+        'editGroup'
       );
-      const result = await createGroupCallable(dataToSend);
+      const result = await editGroupCallable(editData);
 
-      console.log('Cloud Function result:', result.data);
       if (result.data.success) {
-        console.log(
-          'Group created successfully! Group ID:',
-          result.data.groupId
-        );
+        this.navigateRouter.navigate(['/group', formData.name]);
       } else {
-        console.error(
-          'Failed to create group via Cloud Function:',
-          result.data.error
-        );
+        console.error('Failed to update group:', result.data.error);
       }
     } catch (error) {
-      console.error('Error during group creation process:', error);
+      console.error('Error during group edit process:', error);
+    }
     }
   }
 
@@ -143,6 +206,7 @@ export class CreateGroup implements OnInit, OnDestroy {
       this.selectedFileLogo = null;
       this.selectedImagePreviewLogo = null;
     }
+    this.existingLogoUrl = null;
   }
 
   onFileSelectedBanner(event: Event): void {
@@ -154,6 +218,7 @@ export class CreateGroup implements OnInit, OnDestroy {
       this.selectedFileBanner = null;
       this.selectedImagePreviewBanner = null;
     }
+    this.existingBannerUrl = null;
   }
 
   previewImageLogo(): void {
@@ -179,6 +244,7 @@ export class CreateGroup implements OnInit, OnDestroy {
   removeImageLogo(): void {
     this.selectedFileLogo = null;
     this.selectedImagePreviewLogo = null;
+    this.existingLogoUrl = null;
 
     const fileInput = document.getElementById('groupImg') as HTMLInputElement;
     if (fileInput) {
@@ -189,6 +255,7 @@ export class CreateGroup implements OnInit, OnDestroy {
   removeImageBanner(): void {
     this.selectedFileBanner = null;
     this.selectedImagePreviewBanner = null;
+    this.existingBannerUrl = null;
 
     const fileInput = document.getElementById('bannerImg') as HTMLInputElement;
     if (fileInput) {

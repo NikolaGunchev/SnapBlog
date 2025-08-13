@@ -29,10 +29,8 @@
     <div class="title pb-2 relative z-20 max-w-fit">
       <h3>{{post.title}}</h3>
     </div>
-    @if (post.images.length>0) {
-      @for (imageUrl of post.images; track imageUrl) {
-        <img [src]="imageUrl" alt="Post Image" class="relative z-20">
-      }
+    @if (post.imageUrl) {
+        <img [src]="post.imageUrl" alt="Post Image" class="relative z-20">
     } @else {
       <div class="post-content text-sm opacity-75 relative z-20 max-w-fit">{{post.content}}</div>
     }

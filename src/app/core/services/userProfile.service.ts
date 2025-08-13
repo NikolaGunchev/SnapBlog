@@ -1,11 +1,16 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { doc, docData, Firestore } from '@angular/fire/firestore';
 import { AuthenticationService } from './authentication.service';
-import { User } from '../../model';
+import { FunctionResponse, User } from '../../model';
 import { firstValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
 import { userConverter } from './firestoreConverter.service';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Functions, httpsCallableData } from '@angular/fire/functions';
+
+interface EditProfileDataClient {
+  username?: string;
+  bio?: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -74,9 +79,15 @@ export class UserService {
     );
   }
 
-  async deleteUserAccount(): Promise<{ success: boolean; error?: string }> {
-    const callable = httpsCallableData<void, { success: boolean; error?: string }>(this.functions, 'deleteUserAccount');
+  async deleteUserAccount(): Promise<FunctionResponse> {
+    const callable = httpsCallableData<void, FunctionResponse>(this.functions, 'deleteUserAccount');
     const result = await firstValueFrom(callable());
+    return result;
+  }
+
+  async editProfile(data: EditProfileDataClient): Promise<FunctionResponse> {
+    const callable = httpsCallableData<EditProfileDataClient, FunctionResponse>(this.functions, 'editProfile');
+    const result = await firstValueFrom(callable(data));
     return result;
   }
 }

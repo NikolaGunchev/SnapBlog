@@ -32,13 +32,10 @@
     <div class="title pb-2">
       <h2 class="text-2xl">{{data.post?.title}}</h2>
     </div>
-    @if (data.post!.images.length>0) {
-      @for (imageUrl of data.post?.images; track imageUrl) {
-        <img [src]="imageUrl" alt="Post Image">
+      @if (data.post?.imageUrl) {
+        <img [src]="data.post?.imageUrl" alt="Post Image">
       }
-    } @else { 
-      <div class="post-content text-md">{{data.post?.content}}</div>
-      }
+       <div class="post-content text-md mt-5">{{data.post?.content}}</div>
     <div class="post-buttons flex gap-4 mt-3 relative">
       <div class="like-buttons flex bg-[#648d8a1b] rounded-2xl p-2 gap-2">
          <svg class="likes-icon like rounded-2xl size-5 cursor-pointer" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">

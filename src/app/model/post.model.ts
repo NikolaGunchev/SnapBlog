@@ -8,7 +8,7 @@ export interface Post{
   likesCount:number,
   content:string,
   created_at:Timestamp
-  images:string[]
+  imageUrl:string
   commentsCount:number
   creatorName:string
 }

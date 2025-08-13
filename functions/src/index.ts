@@ -4,6 +4,7 @@ import * as admin from 'firebase-admin';
 
 admin.initializeApp();
 const firestore = admin.firestore();
+const storage = admin.storage();
 
 interface CreateGroupData {
   name: string;
@@ -42,6 +43,33 @@ interface PostCommentResponse {
   success: boolean;
   commentId?: string;
   error?: string;
+}
+
+interface BasicResponse {
+  success: boolean;
+  error?: string;
+}
+
+interface EditGroupData {
+  groupId: string;
+  name?: string;
+  description?: string;
+  tags?: string; 
+  rules?: string;
+  newLogoImgUrl?: string | null;
+  newBannerImgUrl?: string | null;
+}
+
+interface EditPostData {
+  postId: string;
+  title?: string;
+  content?: string;
+  newImageUrl?: string | null;
+}
+
+interface EditProfileData {
+  username?: string;
+  bio?: string;
 }
 
 
@@ -288,15 +316,6 @@ exports.postComment = functions.https.onCall(
 
 // ----------------------------------------------------
 
-async function deleteCollection(collectionPath: string, batchSize: number): Promise<void> {
-  const collectionRef = firestore.collection(collectionPath);
-  const query = collectionRef.orderBy('__name__').limit(batchSize);
-
-  return new Promise((resolve, reject) => {
-    deleteQueryBatch(query, resolve).catch(reject);
-  });
-}
-
 async function deleteDocumentsByQuery(query: admin.firestore.Query, batchSize: number, subcollectionNames: string[] = []): Promise<void> {
   const snapshot = await query.get();
   if (snapshot.size === 0) {
@@ -324,13 +343,13 @@ async function deleteDocumentsByQuery(query: admin.firestore.Query, batchSize: n
 }
 
 async function deleteCollectionRecursively(collectionRef: admin.firestore.CollectionReference, batchSize: number): Promise<void> {
-  const query = collectionRef.orderBy('__name__').limit(batchSize); // Use __name__ for generic ordering
+  const query = collectionRef.orderBy('__name__').limit(batchSize);
   return new Promise<void>((resolve, reject) => {
-    deleteQueryBatch(query, resolve).catch(reject);
+    deleteQueryBatch(query, batchSize, resolve).catch(reject);
   });
 }
 
-async function deleteQueryBatch(query: admin.firestore.Query, resolve: () => void): Promise<void> {
+async function deleteQueryBatch(query: admin.firestore.Query, batchSize:number, resolve: () => void): Promise<void> {
   const snapshot = await query.get();
   if (snapshot.size === 0) {
     return resolve();
@@ -344,11 +363,28 @@ async function deleteQueryBatch(query: admin.firestore.Query, resolve: () => voi
   await batch.commit();
 
   // Process next batch in next event loop tick
-  if (snapshot.size === query.limit) { // Check if we processed a full batch
-    process.nextTick(() => deleteQueryBatch(query, resolve));
+  if (snapshot.size === batchSize) {
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    const nextQuery = query.startAfter(lastDoc).limit(batchSize); // Create a new query for the next batch
+    process.nextTick(() => deleteQueryBatch(nextQuery, batchSize, resolve));
   } else {
+    // We've processed the last batch
     resolve();
   }
+}
+
+function getStoragePathFromUrl(url: string): string | null {
+  try {
+    const bucketAndPath = url.split('appspot.com/o/')[1];
+    if (bucketAndPath) {
+      // Decode the path and remove any query parameters/tokens
+      const filePath = decodeURIComponent(bucketAndPath.split('?')[0]);
+      return filePath;
+    }
+  } catch (e) {
+    console.error("Failed to parse storage path from URL:", url, e);
+  }
+  return null;
 }
 // ----------------------------------------------------
 
@@ -382,7 +418,9 @@ exports.deleteGroup = functions.https.onCall(
     });
   });
 
-  await deleteCollection(`groups/${groupId}/posts`, 100);
+  
+  const postsRef = firestore.collection(`groups/${groupId}/posts`);
+  await deleteCollectionRecursively(postsRef, 100);
 
   return { success: true };
 });
@@ -415,8 +453,9 @@ exports.deletePost = functions.https.onCall(async (request: functions.https.Call
     transaction.update(userRef, { posts: admin.firestore.FieldValue.arrayRemove(postId) });
   });
 
-  await deleteCollection(`posts/${postId}/comments`, 100);
-
+  const commentsRef = firestore.collection(`posts/${postId}/comments`);
+  await deleteCollectionRecursively(commentsRef, 100);
+  
   return { success: true };
 });
 
@@ -446,14 +485,9 @@ exports.deleteComment = functions.https.onCall(async (request: functions.https.C
   return { success: true };
 });
 
-
-
-
-// --- Main Delete User Account Function ---
 exports.deleteUserAccount = functions.https.onCall(async (request: functions.https.CallableRequest<void>) => {
   const userId = request.auth?.uid;
 
-  // 1. Authentication Check: Ensure user is logged in
   if (!userId) {
     throw new functions.https.HttpsError(
       'unauthenticated',
@@ -461,25 +495,21 @@ exports.deleteUserAccount = functions.https.onCall(async (request: functions.htt
     );
   }
 
-  const BATCH_SIZE = 100; // Define a batch size for deletions
+  const BATCH_SIZE = 100;
 
   try {
-    // 2. Delete all comments created by the user
     console.log(`Deleting comments by user ${userId}...`);
     const userCommentsQuery = firestore.collectionGroup('comments').where('userId', '==', userId);
-    await deleteDocumentsByQuery(userCommentsQuery, BATCH_SIZE); // No subcollections for comments
+    await deleteDocumentsByQuery(userCommentsQuery, BATCH_SIZE); 
 
-    // 3. Delete all posts created by the user (and their sub-comments)
     console.log(`Deleting posts by user ${userId}...`);
     const userPostsQuery = firestore.collection('posts').where('creatorId', '==', userId);
-    await deleteDocumentsByQuery(userPostsQuery, BATCH_SIZE, ['comments']); // Posts have 'comments' subcollection
+    await deleteDocumentsByQuery(userPostsQuery, BATCH_SIZE, ['comments']);
 
-    // 4. Delete all groups created by the user (and their sub-posts and comments)
     console.log(`Deleting groups by user ${userId}...`);
     const userGroupsQuery = firestore.collection('groups').where('creatorId', '==', userId);
-    await deleteDocumentsByQuery(userGroupsQuery, BATCH_SIZE, ['posts', 'comments']); // Groups might have 'posts' and 'comments' subcollections (adjust if your posts are directly under group or separate)
+    await deleteDocumentsByQuery(userGroupsQuery, BATCH_SIZE, ['posts', 'comments']);
 
-    // 5. Clean up user's ID from 'memberCount' arrays in groups they joined
     console.log(`Cleaning up user ${userId} from group memberships...`);
     const groupsUserIsMemberOfQuery = firestore.collection('groups').where('memberCount', 'array-contains', userId);
     const groupsSnapshot = await groupsUserIsMemberOfQuery.get();
@@ -493,11 +523,9 @@ exports.deleteUserAccount = functions.https.onCall(async (request: functions.htt
     await cleanupBatch.commit();
 
 
-    // 6. Delete the Firestore User Document itself
     console.log(`Deleting user document for ${userId}...`);
     await firestore.collection('users').doc(userId).delete();
 
-    // 7. Finally, delete the Firebase Authentication User Record
     console.log(`Deleting Firebase Auth user ${userId}...`);
     await admin.auth().deleteUser(userId);
 
@@ -506,10 +534,246 @@ exports.deleteUserAccount = functions.https.onCall(async (request: functions.htt
 
   } catch (error: any) {
     console.error('Error deleting user account and data:', error);
-    // Be careful with exposing too much detail in production errors
     if (error instanceof functions.https.HttpsError) {
       throw error;
     }
     throw new functions.https.HttpsError('internal', 'Failed to delete user account and associated data.');
   }
 });
+
+exports.editGroup = functions.https.onCall(
+  async (request: functions.https.CallableRequest<EditGroupData>): Promise<BasicResponse> => {
+    const userId = request.auth?.uid;
+    const { groupId, name, description, tags, rules, newLogoImgUrl, newBannerImgUrl } = request.data;
+
+    if (!userId) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+    }
+    if (!groupId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Group ID is required.');
+    }
+
+    const groupRef = firestore.collection('groups').doc(groupId);
+
+    try {
+      const groupDoc = await groupRef.get();
+      if (!groupDoc.exists) {
+        throw new functions.https.HttpsError('not-found', 'Group not found.');
+      }
+
+      const groupData = groupDoc.data();
+      if (groupData?.creatorId !== userId) {
+        throw new functions.https.HttpsError('permission-denied', 'Only the group creator can edit this group.');
+      }
+
+      const updatedFields: any = {};
+
+      if (name !== undefined) {
+        if (typeof name !== 'string' || name.length < 4) {
+          throw new functions.https.HttpsError('invalid-argument', 'Group name must be at least 4 characters.');
+        }
+        updatedFields.name = name;
+      }
+
+      if (description !== undefined) {
+        if (typeof description !== 'string') {
+          throw new functions.https.HttpsError('invalid-argument', 'Description must be a string.');
+        }
+        updatedFields.description = description;
+      }
+
+      if (tags !== undefined) {
+        if (typeof tags !== 'string') {
+          throw new functions.https.HttpsError('invalid-argument', 'Tags must be a string.');
+        }
+        const processedTags = tags.trim().split(' ').filter(tag => tag.length > 0);
+        if (processedTags.length < 3) {
+          throw new functions.https.HttpsError('invalid-argument', 'Please provide at least 3 tags.');
+        }
+        updatedFields.tags = processedTags;
+      }
+
+      if (rules !== undefined) {
+        if (typeof rules !== 'string') {
+          throw new functions.https.HttpsError('invalid-argument', 'Rules must be a string.');
+        }
+        updatedFields.rules = rules;
+      }
+
+      // Handle logo image update
+      if (newLogoImgUrl !== undefined) { // Check if new URL was provided (even if null for removal)
+        const oldLogoImgUrl = groupData?.logoImgUrl;
+        if (oldLogoImgUrl && oldLogoImgUrl !== newLogoImgUrl) {
+          const oldPath = getStoragePathFromUrl(oldLogoImgUrl);
+          if (oldPath) {
+            await storage.bucket().file(oldPath).delete()
+              .catch(err => console.warn(`Could not delete old logo image at ${oldPath}:`, err));
+          }
+        }
+        updatedFields.logoImgUrl = newLogoImgUrl; // Set new URL (could be null to remove)
+      }
+
+      // Handle banner image update
+      if (newBannerImgUrl !== undefined) { // Check if new URL was provided (even if null for removal)
+        const oldBannerImgUrl = groupData?.bannerImgUrl;
+        if (oldBannerImgUrl && oldBannerImgUrl !== newBannerImgUrl) {
+          const oldPath = getStoragePathFromUrl(oldBannerImgUrl);
+          if (oldPath) {
+            await storage.bucket().file(oldPath).delete()
+              .catch(err => console.warn(`Could not delete old banner image at ${oldPath}:`, err));
+          }
+        }
+        updatedFields.bannerImgUrl = newBannerImgUrl; // Set new URL (could be null to remove)
+      }
+
+      if (Object.keys(updatedFields).length === 0) {
+        return { success: true, error: 'No fields to update.' };
+      }
+
+      await groupRef.update(updatedFields);
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('Error editing group:', error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      throw new functions.https.HttpsError('internal', 'Failed to edit group.');
+    }
+  }
+);
+
+
+exports.editPost = functions.https.onCall(
+  async (request: functions.https.CallableRequest<EditPostData>): Promise<BasicResponse> => {
+    const userId = request.auth?.uid;
+    const { postId, title, content, newImageUrl } = request.data;
+
+    if (!userId) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+    }
+    if (!postId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Post ID is required.');
+    }
+
+    const postRef = firestore.collection('posts').doc(postId);
+
+    try {
+      const postDoc = await postRef.get();
+      if (!postDoc.exists) {
+        throw new functions.https.HttpsError('not-found', 'Post not found.');
+      }
+
+      const postData = postDoc.data();
+      if (postData?.creatorId !== userId) {
+        throw new functions.https.HttpsError('permission-denied', 'Only the post creator can edit this post.');
+      }
+
+      const updatedFields: any = {};
+
+      if (title !== undefined) {
+        if (typeof title !== 'string' || title.length < 5) {
+          throw new functions.https.HttpsError('invalid-argument', 'Post title must be at least 5 characters.');
+        }
+        updatedFields.title = title;
+      }
+
+      if (content !== undefined) {
+        if (typeof content !== 'string') {
+          throw new functions.https.HttpsError('invalid-argument', 'Content must be a string.');
+        }
+        updatedFields.content = content;
+      }
+
+      if (content !== undefined) {
+        if (typeof content !== 'string') {
+          throw new functions.https.HttpsError('invalid-argument', 'Content must be a string.');
+        }
+        if (content.trim().length === 0) {
+          throw new functions.https.HttpsError('invalid-argument', 'Post must have content.');
+        }
+        updatedFields.content = content;
+      } else {
+        if (!postData?.content || postData.content.trim().length === 0) {
+          throw new functions.https.HttpsError('invalid-argument', 'Post must have content.');
+        }
+      }
+
+      if (newImageUrl !== undefined) {
+        const oldImageUrl = postData?.imageUrl;
+        if (oldImageUrl && oldImageUrl !== newImageUrl) {
+          const oldPath = getStoragePathFromUrl(oldImageUrl);
+          if (oldPath) {
+            await storage.bucket().file(oldPath).delete()
+              .catch(err => console.warn(`Could not delete old post image at ${oldPath}:`, err));
+          }
+        }
+        updatedFields.imageUrl = newImageUrl;
+      }
+      
+      if (Object.keys(updatedFields).length === 0) {
+        return { success: true, error: 'No fields to update.' };
+      }
+
+      await postRef.update(updatedFields);
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('Error editing post:', error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      throw new functions.https.HttpsError('internal', 'Failed to edit post.');
+    }
+  }
+);
+
+exports.editProfile = functions.https.onCall(
+  async (request: functions.https.CallableRequest<EditProfileData>): Promise<BasicResponse> => {
+    const userId = request.auth?.uid;
+    const { username, bio } = request.data;
+
+    if (!userId) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+    }
+
+    const userRef = firestore.collection('users').doc(userId);
+
+    try {
+      const userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        throw new functions.https.HttpsError('not-found', 'User profile not found.');
+      }
+
+      const updatedFields: any = {};
+
+      if (username !== undefined) {
+        if (typeof username !== 'string' || username.length < 3) {
+          throw new functions.https.HttpsError('invalid-argument', 'Username must be at least 3 characters.');
+        }
+        updatedFields.username = username;
+      }
+
+      if (bio !== undefined) {
+        if (typeof bio !== 'string') {
+          throw new functions.https.HttpsError('invalid-argument', 'Bio must be a string.');
+        }
+        updatedFields.bio = bio;
+      }
+      
+      if (Object.keys(updatedFields).length === 0) {
+        return { success: true, error: 'No fields to update.' };
+      }
+
+      await userRef.update(updatedFields);
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('Error editing profile:', error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      throw new functions.https.HttpsError('internal', 'Failed to edit profile.');
+    }
+  }
+);

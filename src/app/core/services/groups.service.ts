@@ -12,9 +12,8 @@ import {
   limit,
 } from '@angular/fire/firestore';
 import { catchError, firstValueFrom, from, map, Observable, take, throwError } from 'rxjs';
-import { Group } from '../../model';
+import { FunctionResponse, Group } from '../../model';
 import { groupConverter } from './firestoreConverter.service';
-import { HttpsCallable } from 'firebase/functions';
 import { Functions, httpsCallable, httpsCallableData } from '@angular/fire/functions';
 
 @Injectable({
@@ -24,14 +23,12 @@ export class GroupsService {
   private firestore = inject(Firestore);
   private functions = inject(Functions)
   private groupsCollection: CollectionReference<Group>;
-  private joinGroupCallable: HttpsCallable<any, any>;
 
   constructor() {
     this.groupsCollection = collection(this.firestore, 'groups').withConverter(
       groupConverter
     ) as CollectionReference<Group>;
 
-    this.joinGroupCallable = httpsCallable(this.functions, 'joinGroup');
   }
 
   getGroups(): Observable<Group[]> {
@@ -96,7 +93,8 @@ export class GroupsService {
   }
 
   joinGroup(groupId: string): Observable<void> {
-    return from(this.joinGroupCallable({ groupId })).pipe(
+    const callable = httpsCallable(this.functions, 'joinGroup');
+    return from(callable({ groupId })).pipe(
       map((response) => {
         const result = response.data as { success: boolean };
         if (!result || !result.success) {
@@ -109,9 +107,15 @@ export class GroupsService {
     );
   }
 
-  async deleteGroup(groupId: string): Promise<{ success: boolean; error?: string }> {
-    const callable = httpsCallableData<any, { success: boolean; error?: string }>(this.functions, 'deleteGroup');
+  async deleteGroup(groupId: string): Promise<FunctionResponse> {
+    const callable = httpsCallableData<any, FunctionResponse>(this.functions, 'deleteGroup');
     const result = await firstValueFrom(callable({ groupId }));
+    return result;
+  }
+
+   async editGroup(data:Group): Promise<FunctionResponse> {
+    const callable = httpsCallableData<Group, FunctionResponse>(this.functions, 'editGroup');
+    const result = await firstValueFrom(callable(data));
     return result;
   }
 }
