@@ -94,4 +94,10 @@ export class GroupDetails {
       }
     }
   }
+
+  editPage(groupId:string | undefined){
+    this.navigateRoute.navigate(['/create-group'], {
+  queryParams: { edit: groupId }
+})
+  }
 }

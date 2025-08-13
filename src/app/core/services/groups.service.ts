@@ -15,15 +15,15 @@ import { catchError, firstValueFrom, from, map, Observable, take, throwError } f
 import { Group } from '../../model';
 import { groupConverter } from './firestoreConverter.service';
 import { HttpsCallable } from 'firebase/functions';
-import { getFunctions, httpsCallable, httpsCallableData } from '@angular/fire/functions';
+import { Functions, httpsCallable, httpsCallableData } from '@angular/fire/functions';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GroupsService {
   private firestore = inject(Firestore);
+  private functions = inject(Functions)
   private groupsCollection: CollectionReference<Group>;
-  private functions = getFunctions();
   private joinGroupCallable: HttpsCallable<any, any>;
 
   constructor() {

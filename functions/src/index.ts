@@ -1,7 +1,6 @@
 // firebase/functions/src/index.ts
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { CallableContext } from 'firebase-functions/v1/https'; 
 
 admin.initializeApp();
 const firestore = admin.firestore();
