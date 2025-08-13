@@ -35,6 +35,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/user-profile/user-profile').then(c=>c.UserProfile),
   },
   {
+    path: 'user-edit/:id',
+    loadComponent: () => import('./features/user-edit/user-edit').then(c=>c.UserEdit),
+  },
+  {
     path: '**',
     component: NotFound
   }

@@ -1,6 +1,7 @@
 // firebase/functions/src/index.ts
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { CallableContext } from 'firebase-functions/v1/https'; 
 
 admin.initializeApp();
 const firestore = admin.firestore();
@@ -286,6 +287,8 @@ exports.postComment = functions.https.onCall(
   }
 );
 
+// ----------------------------------------------------
+
 async function deleteCollection(collectionPath: string, batchSize: number): Promise<void> {
   const collectionRef = firestore.collection(collectionPath);
   const query = collectionRef.orderBy('__name__').limit(batchSize);
@@ -295,7 +298,40 @@ async function deleteCollection(collectionPath: string, batchSize: number): Prom
   });
 }
 
-async function deleteQueryBatch(query: any, resolve: any): Promise<void> {
+async function deleteDocumentsByQuery(query: admin.firestore.Query, batchSize: number, subcollectionNames: string[] = []): Promise<void> {
+  const snapshot = await query.get();
+  if (snapshot.size === 0) {
+    return;
+  }
+
+  const batch = firestore.batch();
+  for (const doc of snapshot.docs) {
+    batch.delete(doc.ref);
+
+    // Recursively delete subcollections
+    for (const subColName of subcollectionNames) {
+      await deleteCollectionRecursively(doc.ref.collection(subColName), batchSize);
+    }
+  }
+
+  await batch.commit();
+
+  // If there are more documents, process the next batch
+  if (snapshot.size === batchSize) {
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    const nextQuery = query.startAfter(lastDoc.data().createdAt || lastDoc); // Use a timestamp for ordered queries if possible
+    await deleteDocumentsByQuery(nextQuery, batchSize, subcollectionNames);
+  }
+}
+
+async function deleteCollectionRecursively(collectionRef: admin.firestore.CollectionReference, batchSize: number): Promise<void> {
+  const query = collectionRef.orderBy('__name__').limit(batchSize); // Use __name__ for generic ordering
+  return new Promise<void>((resolve, reject) => {
+    deleteQueryBatch(query, resolve).catch(reject);
+  });
+}
+
+async function deleteQueryBatch(query: admin.firestore.Query, resolve: () => void): Promise<void> {
   const snapshot = await query.get();
   if (snapshot.size === 0) {
     return resolve();
@@ -307,8 +343,15 @@ async function deleteQueryBatch(query: any, resolve: any): Promise<void> {
   });
 
   await batch.commit();
-  process.nextTick(() => deleteQueryBatch(query, resolve));
+
+  // Process next batch in next event loop tick
+  if (snapshot.size === query.limit) { // Check if we processed a full batch
+    process.nextTick(() => deleteQueryBatch(query, resolve));
+  } else {
+    resolve();
+  }
 }
+// ----------------------------------------------------
 
 exports.deleteGroup = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ groupId: string }>) => {
@@ -345,7 +388,6 @@ exports.deleteGroup = functions.https.onCall(
   return { success: true };
 });
 
-// ----------------------------------------------------
 
 exports.deletePost = functions.https.onCall(async (request: functions.https.CallableRequest<{ postId: string }>) => {
   const userId = request.auth?.uid;
@@ -379,7 +421,6 @@ exports.deletePost = functions.https.onCall(async (request: functions.https.Call
   return { success: true };
 });
 
-// ----------------------------------------------------
 
 exports.deleteComment = functions.https.onCall(async (request: functions.https.CallableRequest<{ postId: string; commentId: string }>) => {
   const userId = request.auth?.uid;
@@ -404,4 +445,72 @@ exports.deleteComment = functions.https.onCall(async (request: functions.https.C
   await commentRef.delete();
 
   return { success: true };
+});
+
+
+
+
+// --- Main Delete User Account Function ---
+exports.deleteUserAccount = functions.https.onCall(async (request: functions.https.CallableRequest<void>) => {
+  const userId = request.auth?.uid;
+
+  // 1. Authentication Check: Ensure user is logged in
+  if (!userId) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'User must be authenticated to delete their account.'
+    );
+  }
+
+  const BATCH_SIZE = 100; // Define a batch size for deletions
+
+  try {
+    // 2. Delete all comments created by the user
+    console.log(`Deleting comments by user ${userId}...`);
+    const userCommentsQuery = firestore.collectionGroup('comments').where('userId', '==', userId);
+    await deleteDocumentsByQuery(userCommentsQuery, BATCH_SIZE); // No subcollections for comments
+
+    // 3. Delete all posts created by the user (and their sub-comments)
+    console.log(`Deleting posts by user ${userId}...`);
+    const userPostsQuery = firestore.collection('posts').where('creatorId', '==', userId);
+    await deleteDocumentsByQuery(userPostsQuery, BATCH_SIZE, ['comments']); // Posts have 'comments' subcollection
+
+    // 4. Delete all groups created by the user (and their sub-posts and comments)
+    console.log(`Deleting groups by user ${userId}...`);
+    const userGroupsQuery = firestore.collection('groups').where('creatorId', '==', userId);
+    await deleteDocumentsByQuery(userGroupsQuery, BATCH_SIZE, ['posts', 'comments']); // Groups might have 'posts' and 'comments' subcollections (adjust if your posts are directly under group or separate)
+
+    // 5. Clean up user's ID from 'memberCount' arrays in groups they joined
+    console.log(`Cleaning up user ${userId} from group memberships...`);
+    const groupsUserIsMemberOfQuery = firestore.collection('groups').where('memberCount', 'array-contains', userId);
+    const groupsSnapshot = await groupsUserIsMemberOfQuery.get();
+    const cleanupBatch = firestore.batch();
+    groupsSnapshot.docs.forEach(doc => {
+        cleanupBatch.update(doc.ref, {
+            memberCount: admin.firestore.FieldValue.arrayRemove(userId),
+            memberCountValue: admin.firestore.FieldValue.increment(-1)
+        });
+    });
+    await cleanupBatch.commit();
+
+
+    // 6. Delete the Firestore User Document itself
+    console.log(`Deleting user document for ${userId}...`);
+    await firestore.collection('users').doc(userId).delete();
+
+    // 7. Finally, delete the Firebase Authentication User Record
+    console.log(`Deleting Firebase Auth user ${userId}...`);
+    await admin.auth().deleteUser(userId);
+
+    console.log(`User ${userId} and all associated data deleted successfully.`);
+    return { success: true };
+
+  } catch (error: any) {
+    console.error('Error deleting user account and data:', error);
+    // Be careful with exposing too much detail in production errors
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    throw new functions.https.HttpsError('internal', 'Failed to delete user account and associated data.');
+  }
 });

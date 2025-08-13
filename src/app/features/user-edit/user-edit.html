@@ -6,13 +6,13 @@
     <form class="login space-y-6" [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
       <div class="field">
-        <label for="title" class="text-[#3d3a33]">Title</label>
+        <label for="title" class="text-[#3d3a33]">Username</label>
         <input
           [class.border-red]="isUsernameInvalid"
           type="text"
           id="title"
           class="block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
-          formControlName="title"
+          formControlName="username"
         />
       </div>
       @if (isUsernameInvalid) {
@@ -24,7 +24,7 @@
         <textarea 
         id="Bio" 
         class="resize-none block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
-        formControlName="Bio"></textarea>
+        formControlName="bio"></textarea>
       </div>
 
       <button

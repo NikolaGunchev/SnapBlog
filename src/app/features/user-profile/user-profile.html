@@ -1,41 +1,46 @@
-<div class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
-  <div class="cotnainer col-span-12 lg:col-span-8 ">
-    <div class="user-header relative flex justify-between">
-      <div class="left flex gap-3">
-        <div class="img-holder size-20 rounded-full">
-            <img src="profile-logo.png" alt="profile logo" class="w-full h-full object-cover">
+@if (currentUser()) {
+  <div class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+    <div class="cotnainer col-span-12 lg:col-span-8 ">
+      <div class="user-header relative flex justify-between">
+        <div class="left flex gap-3">
+          <div class="img-holder size-20 rounded-full">
+              <img src="profile-logo.png" alt="profile logo" class="w-full h-full object-cover">
+          </div>
+          <p class="text-3xl self-end">{{currentUser()?.username}}</p>
         </div>
-        <p class="text-3xl self-end">{{currentUser()?.username}}</p>
+        <div class="right">
+          <app-menu-icons
+            (editClicked)="handleEditClicked()"
+            (deleteClicked)="handleDeleteClicked()"
+          ></app-menu-icons>
+        </div>
+  
       </div>
-      <div class="right">
-        <app-menu-icons
-          (editClicked)="handleEditClicked(currentUser()!)"
-          (deleteClicked)="deletePost(currentUser()!)"
-        ></app-menu-icons>
+      <h2 class="mt-6 text-xl">About me</h2>
+      <div class="bio mt-2">
+        @if (currentUser()?.bio) {
+          <p>{{currentUser()?.bio}}</p>
+        }@else {
+          <p class="opacity-70">Write something about yourself...</p>
+        }
       </div>
+    </div>
+    <div
+      class="side-content col-span-12 lg:col-span-4 flex flex-col gap-6 min-h-screen mt-[100px]"
+    >
+      <div class="user-info flex flex-col bg-[#fcf1d9] p-2">
+        <p>Profile created {{currentUser()!.created_at | timeAgo}}</p>
+        <h3 class="my-2 font-semibold">Stats</h3>
+        <p>Groups Created: {{currentUser()!.groups.length}}</p>
+        <p>Posts Created: {{currentUser()!.posts.length}}</p>
+        <p>Comments Created: {{currentUser()!.comments.length}}</p>
+        <p>Likes given: {{currentUser()!.likedPosts.length}}</p>
+      </div>
+      <app-footer></app-footer>
+    </div>
+  </div>
 
-    </div>
-    <h2 class="mt-6 text-xl">About me</h2>
-    <div class="bio mt-2">
-      @if (currentUser()!.bio.length>0) {
-        <p>{{currentUser()?.bio}}</p>
-      }@else {
-        <p class="opacity-70">Write something about yourself...</p>
-      }
-    </div>
-  </div>
-  <div
-    class="side-content col-span-12 lg:col-span-4 flex flex-col gap-6 min-h-screen mt-[100px]"
-  >
-    <div class="user-info flex flex-col bg-[#fcf1d9]">
-      <p>Profile created {{currentUser()!.created_at | timeAgo}}</p>
-      <h3 class="my-2 font-semibold">Stats</h3>
-      <p>Groups Created: {{currentUser()!.groups.length}}</p>
-      <p>Posts Created: {{currentUser()!.posts.length}}</p>
-      <p>Comments Created: {{currentUser()!.comments.length}}</p>
-      <p>Likes given: {{currentUser()!.likedPosts.length}}</p>
-    </div>
-    <app-footer></app-footer>
-  </div>
-</div>
+}@else {
+  <p>loading</p>
+}
 

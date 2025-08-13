@@ -2,9 +2,10 @@ import { inject, Injectable, signal } from '@angular/core';
 import { doc, docData, Firestore } from '@angular/fire/firestore';
 import { AuthenticationService } from './authentication.service';
 import { User } from '../../model';
-import { map, Observable, of, switchMap, tap } from 'rxjs';
+import { firstValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
 import { userConverter } from './firestoreConverter.service';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { Functions, httpsCallableData } from '@angular/fire/functions';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 export class UserService {
   private firestore = inject(Firestore);
   private authService = inject(AuthenticationService);
+  private functions=inject(Functions)
 
   private _userProfile = signal<User | null>(null);
 
@@ -70,5 +72,11 @@ export class UserService {
         }
       })
     );
+  }
+
+  async deleteUserAccount(): Promise<{ success: boolean; error?: string }> {
+    const callable = httpsCallableData<void, { success: boolean; error?: string }>(this.functions, 'deleteUserAccount');
+    const result = await firstValueFrom(callable());
+    return result;
   }
 }
