@@ -1,7 +1,7 @@
 <div class="container px-1 py-2 bg-[#fcf1d9]">
-  <h5 class="mb-5 ml-1 text-sm">POPULAR GROUPS</h5>
+  <h5 class="mb-5 ml-1 text-sm">ALL GROUPS</h5>
   <div class="groups-container rounded-lg p-3 flex flex-col gap-2">
-    @for (group of topFiveGroups$ | async; track $index) {
+    @for (group of allGroups$ | async; track $index) {
       <a [routerLink]="['/group', group.name]">
         <div class="group flex gap-3 items-center p-2 hover:bg-[#ecdcba4d] active:bg-[#ecdcbab0]">
           <div class="image-holder size-9 rounded-full">

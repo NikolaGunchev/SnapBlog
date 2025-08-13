@@ -75,7 +75,7 @@ export class FormBuilderService {
         //group
         form = this.formBuilder.group({
           name: ['', [Validators.required, Validators.minLength(4)]],
-          description: ['', [Validators.required]],
+          description: ['', [Validators.required, Validators.maxLength(50)]],
           images: this.formBuilder.group({
             logoImg: [''],
             bannerImg: [''],
@@ -304,6 +304,9 @@ export class FormBuilderService {
 
     if (control?.errors?.['required']) {
       return 'Description is required';
+    }
+    if (control?.errors?.['maxlength']) {
+      return 'Description is too long'
     }
     return '';
   }

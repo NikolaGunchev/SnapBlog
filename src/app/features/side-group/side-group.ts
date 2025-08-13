@@ -15,9 +15,9 @@ export class SideGroup implements OnInit{
  
  private groupsService=inject(GroupsService)
 
- topFiveGroups$!:Observable<Group[]>
+ allGroups$!:Observable<Group[]>
 
 ngOnInit(): void {
-   this.topFiveGroups$=this.groupsService.getTopFiveGroups()
+   this.allGroups$=this.groupsService.getGroups()
  }
 }

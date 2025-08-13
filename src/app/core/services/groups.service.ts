@@ -54,7 +54,7 @@ export class GroupsService {
     return collectionData<Group>(
       this.groupsCollection as CollectionReference<Group>,
       { idField: 'id' }
-    ).pipe(take(1));
+    )
   }
 
   getTopFiveGroups(): Observable<Group[]> {
