@@ -7,11 +7,10 @@ import {
 } from '../../core/services';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ImageUploadService } from '../../core/services/imageUpload.service';
-import { Functions, httpsCallable } from '@angular/fire/functions';
+import { Functions } from '@angular/fire/functions';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { Group, Post } from '../../model';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-create-post',
@@ -24,7 +23,6 @@ export class CreatePost implements OnInit, OnDestroy {
   private router = inject(ActivatedRoute);
   private groupService = inject(GroupsService);
   private imagesService = inject(ImageUploadService);
-  private functions = inject(Functions);
   private postService = inject(PostsService);
   private subscriptions!: Subscription;
   private navigateRouter = inject(Router);

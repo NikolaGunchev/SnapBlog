@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilderService, UserService } from '../../core/services';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component({
