@@ -121,23 +121,10 @@ export class CreateGroup implements OnInit, OnDestroy {
           bannerImgUrl: bannerImgUrl,
         };
   
-        const createGroupCallable = httpsCallable<any, any>(
-          this.function,
-          'CreateGroup'
-        );
-        const result = await createGroupCallable(dataToSend);
+        const result=await this.groupService.createGroup(dataToSend)
   
-        console.log('Cloud Function result:', result.data);
-        if (result.data.success) {
-          console.log(
-            'Group created successfully! Group ID:',
-            result.data.groupId
-          );
-        } else {
-          console.error(
-            'Failed to create group via Cloud Function:',
-            result.data.error
-          );
+        if (result.success) {
+          this.navigateRouter.navigate(['/group', formData.name])
         }
       } catch (error) {
         console.error('Error during group creation process:', error);
@@ -180,16 +167,11 @@ export class CreateGroup implements OnInit, OnDestroy {
         newBannerImgUrl: newBannerUrl,
       };
 
-      const editGroupCallable = httpsCallable<any, any>(
-        this.function,
-        'editGroup'
-      );
-      const result = await editGroupCallable(editData);
+      const resultEdit=await this.groupService.editGroup(editData)
 
-      if (result.data.success) {
+
+      if (resultEdit.success) {
         this.navigateRouter.navigate(['/group', formData.name]);
-      } else {
-        console.error('Failed to update group:', result.data.error);
       }
     } catch (error) {
       console.error('Error during group edit process:', error);

@@ -4,7 +4,7 @@ import { Footer } from '../../shared/footer/footer';
 import { SideGroup } from '../side-group/side-group';
 import { AuthenticationService, PostsService, UserService } from '../../core/services';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { combineLatest, map, Observable } from 'rxjs';
+import { combineLatest, map, Observable, startWith, Subject, switchMap } from 'rxjs';
 import { Comment, Post } from '../../model';
 import { CommonModule } from '@angular/common';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
@@ -27,12 +27,14 @@ export class PostDetails implements OnInit{
   public authService=inject(AuthenticationService)
   public router=inject(ActivatedRoute)
   
-  combined$!:Observable<{post:Post | undefined; comments:Comment[]}>
+  post$!:Observable<Post | undefined>
+  comments$!:Observable<Comment[]>
+
   readonly currentUser=this.userService.userProfile
-
   groupName!:string
-
   private _snackBar = inject(MatSnackBar);
+
+  private getComments$=new Subject<void>()
 
   openSnackBar(message: string) {
     this._snackBar.open(message, "close", {
@@ -44,12 +46,15 @@ export class PostDetails implements OnInit{
     this.groupName=this.router.snapshot.paramMap.get('name') ?? '';
     const postId=this.router.snapshot.paramMap.get('id') ?? '';
 
-    this.combined$ = combineLatest([
-      this.postService.getPostById(postId),
-      this.commentsService.getCommentsByPostId(postId)
-    ]).pipe(
-      map(([post, comments])=>({post, comments}))
+    this.post$=this.postService.getPostById(postId)
+    this.comments$=this.getComments$.pipe(
+      startWith(undefined),
+      switchMap(() => this.commentsService.getCommentsByPostId(postId))
     )
+  }
+
+  refreshComments(): void {
+    this.getComments$.next();
   }
 
   editPage(groupName: string | undefined, postId: string | undefined) {

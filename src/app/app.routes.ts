@@ -31,7 +31,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/post-details/post-details').then(c=>c.PostDetails),
   },
   {
-    path: 'user-profile',
+    path: 'profile',
     loadComponent: () => import('./features/user-profile/user-profile').then(c=>c.UserProfile),
   },
   {

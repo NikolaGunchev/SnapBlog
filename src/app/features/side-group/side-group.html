@@ -4,7 +4,13 @@
     @for (group of topFiveGroups$ | async; track $index) {
       <a [routerLink]="['/group', group.name]">
         <div class="group flex gap-3 items-center p-2 hover:bg-[#ecdcba4d] active:bg-[#ecdcbab0]">
-          <div class="image-holder size-9 rounded-full bg-[red]"></div>
+          <div class="image-holder size-9 rounded-full">
+            @if (group.logoImgUrl) {
+              <img [src]="group.logoImgUrl" alt="group-logo" class="w-full h-full object-cover rounded-full">
+            }@else {
+              <img src="group.png" alt="group-logo" class="w-full h-full object-cover">
+            }
+          </div>
           <div class="name">
             <p class="text-sm">{{group.name}}</p>
             <p class="text-xs text-gray-500">{{group.memberCount}} members</p>

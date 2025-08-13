@@ -64,9 +64,7 @@ export class GroupDetails {
         if (group) {
           const posts$ = this.postService.getPostsByGroupId(group.id);
 
-          this.joined = this.userService
-            .userProfile()
-            ?.groups.includes(group.id);
+          this.joined = this.currentUser()?.groups.includes(group.id);
 
           return combineLatest([of(group), posts$]).pipe(
             map(([group, posts]) => ({ group, posts }))
@@ -76,6 +74,32 @@ export class GroupDetails {
         }
       })
     );
+  }
+
+  async joinGroup(groupId:string):Promise<void>{
+    try {
+      const result = await this.groupService.joinGroup(groupId)
+      if (result.success) {
+        this.openSnackBar('Successfully joined the group');
+      }else{
+        this.openSnackBar('There was an error joining the group');
+      }
+    } catch (error) {
+      console.error('Something happend while joining the group',error);
+    }
+  }
+
+  async leaveGroup(groupId:string):Promise<void>{
+    try {
+      const result = await this.groupService.leaveGroup(groupId)
+      if (result.success) {
+        this.openSnackBar('Successfully left the group');
+      }else{
+        this.openSnackBar('There was an error leaving the group');
+      }
+    } catch (error) {
+      console.error('Something happend while leaving the group',error);
+    }
   }
 
   async deleteGroup(groupId: string): Promise<void> {
@@ -90,7 +114,7 @@ export class GroupDetails {
           this.openSnackBar(`Failed to delete group: ${result.error}`);
         }
       } catch (error) {
-        console.error('Something happend while deleting the group');
+        console.error('Something happend while deleting the group',error);
       }
     }
   }

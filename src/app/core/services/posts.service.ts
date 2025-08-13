@@ -5,6 +5,21 @@ import { FunctionResponse, Post } from "../../model";
 import { postConverter } from "./firestoreConverter.service";
 import { Functions, httpsCallableData } from "@angular/fire/functions";
 
+interface CreatePostData {
+  groupId: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  creatorName:string | undefined;
+}
+
+interface EditPostData {
+  postId: string;
+  title?: string;
+  content?: string;
+  newImageUrl?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,9 +33,7 @@ export class PostsService{
   }
 
   getPosts():Observable<Post[]>{
-    return collectionData<Post>(this.postsCollection as CollectionReference<Post>, {idField: 'id'}).pipe(
-      take(1)
-    );
+    return collectionData<Post>(this.postsCollection as CollectionReference<Post>, {idField: 'id'})
   }
 
   getPostsByUser(userId: string):Observable<Post[]>{
@@ -51,14 +64,20 @@ export class PostsService{
   );
 }
 
-async deletePost(postId: string): Promise<FunctionResponse> {
+async createPost(data: CreatePostData): Promise<FunctionResponse> {
+    const callable = httpsCallableData<CreatePostData, FunctionResponse>(this.functions, 'createPost');
+    const result = await firstValueFrom(callable(data));
+    return result;
+  }
+
+  async deletePost(postId: string): Promise<FunctionResponse> {
     const callable = httpsCallableData<any, FunctionResponse>(this.functions, 'deletePost');
     const result = await firstValueFrom(callable({ postId }));
     return result;
   }
 
-  async editPost(data: Post): Promise<FunctionResponse> {
-  const callable = httpsCallableData<Post, FunctionResponse>(this.functions, 'editPost');
+  async editPost(data: EditPostData): Promise<FunctionResponse> {
+  const callable = httpsCallableData<EditPostData, FunctionResponse>(this.functions, 'editPost');
   const result = await firstValueFrom(callable(data));
   return result;
 }

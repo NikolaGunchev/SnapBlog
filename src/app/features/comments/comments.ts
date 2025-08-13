@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { AuthenticationService, UserService } from '../../core/services';
 import { Comment, Post } from '../../model';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -26,6 +26,7 @@ export class Comments {
 
   @Input() comments!: Comment[]
   @Input() post!:Post | undefined
+  @Output() commentChange = new EventEmitter<void>();
 
   currentlyTyping=false
   commentControl=new FormControl('',[Validators.required])
@@ -63,13 +64,15 @@ export class Comments {
 
       const result = await postCommentCallable({
         postId: this.post?.id,
-        text: commentText
+        text: commentText,
+        creatorName:this.currentUser()?.username
       });
 
       if (result.data.success) {
         this.openSnackBar('Comment successfully posted!')
-        this.commentControl.reset();
         this.cancelTyping()
+        this.commentControl.reset()
+        this.commentChange.emit()
       } else {
         this.openSnackBar(`Failed to post comment:, ${result.data.error}`)
       }
@@ -89,12 +92,12 @@ export class Comments {
         const result = await this.commentService.deleteComment(postId,commentId)
         if (result.success) {
           this.openSnackBar("Successfully deleted the comment")
-          this.navigateRoute.navigate(['/'])
+          this.commentChange.emit()
         } else {
           this.openSnackBar(`Failed to delete comment: ${result.error}`)
         }
       } catch (error) {
-        console.error("Something happend while deleting the comment")
+        console.error("Something happend while deleting the comment", error)
       }
     }
   }

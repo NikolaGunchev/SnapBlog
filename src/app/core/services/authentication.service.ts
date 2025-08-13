@@ -52,25 +52,15 @@ export class AuthenticationService {
 
         const userDocRef = doc(this.firestore, `users/${uid}`);
         setDoc(userDocRef, user);
-
-        console.log('User registered and profile created in Firestore!');
       })
     );
   }
 
   login(email: string, password: string): Observable<UserCredential> {
-    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-      tap(() => {
-        console.log('User logged in successfully.');
-      })
-    );
+    return from(signInWithEmailAndPassword(this.auth, email, password))
   }
 
   logout(): Observable<void> {
-    return from(signOut(this.auth)).pipe(
-      tap(() => {
-        console.log("User logged out successfully.");
-      })
-    );
+    return from(signOut(this.auth))
   }
 }

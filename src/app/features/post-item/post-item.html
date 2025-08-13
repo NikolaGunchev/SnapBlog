@@ -10,7 +10,13 @@
         <div class="group-info flex gap-1">
           @if (isGroupPosts) {
             <a routerLink="/group/{{group.name}}">
-              <div class="img-holder size-7 rounded-full bg-[red]">g</div>
+              <div class="img-holder size-7 rounded-full">
+                @if (group.logoImgUrl) {
+                  <img [src]="group.logoImgUrl" alt="group-logo" class="w-full h-full object-cover">
+                }@else {
+                  <img src="group.png" alt="group-logo" class="w-full h-full object-cover">
+                }
+              </div>
             </a>
             <a routerLink="/group/{{group.name}}" class="content-center">
               <p class="text-xs hover:text-[#76a7a4]">{{ group.name }}</p>   

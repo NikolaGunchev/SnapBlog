@@ -11,10 +11,29 @@ import {
   where,
   limit,
 } from '@angular/fire/firestore';
-import { catchError, firstValueFrom, from, map, Observable, take, throwError } from 'rxjs';
+import {  firstValueFrom, from, map, Observable, take } from 'rxjs';
 import { FunctionResponse, Group } from '../../model';
 import { groupConverter } from './firestoreConverter.service';
-import { Functions, httpsCallable, httpsCallableData } from '@angular/fire/functions';
+import { Functions, httpsCallableData } from '@angular/fire/functions';
+
+ interface CreateGroupData {
+  name: string;
+  description: string;
+  tags: string;
+  logoImgUrl?: string;
+  bannerImgUrl?: string;
+  rules?: string;
+}
+
+interface EditGroupData {
+  groupId: string;
+  name?: string;
+  description?: string;
+  tags?: string; 
+  rules?: string;
+  newLogoImgUrl?: string | null;
+  newBannerImgUrl?: string | null;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -47,12 +66,12 @@ export class GroupsService {
 
     return collectionData<Group>(filtered as CollectionReference<Group>, {
       idField: 'id',
-    }).pipe(take(1)) as Observable<Group[]>;
+    })
   }
 
   getGroupsByUser(userId: string): Observable<Group[]> {
     const filterd = query(this.groupsCollection, where('userId', '==', userId));
-    return collectionData(filterd, { idField: 'id' }) as Observable<Group[]>;
+    return collectionData(filterd, { idField: 'id' })
   }
 
   getGroupById(groupId: string): Observable<Group | undefined> {
@@ -87,24 +106,25 @@ export class GroupsService {
     return collectionData<Group>(filtered as CollectionReference<Group>, {
       idField: 'id',
     }).pipe(
-      map((groups) => (groups.length ? groups[0] : undefined)),
-      take(1)
-    ) as Observable<Group | undefined>;
+      map((groups) => (groups.length ? groups[0] : undefined)))
   }
 
-  joinGroup(groupId: string): Observable<void> {
-    const callable = httpsCallable(this.functions, 'joinGroup');
-    return from(callable({ groupId })).pipe(
-      map((response) => {
-        const result = response.data as { success: boolean };
-        if (!result || !result.success) {
-          throw new Error('Cloud function call failed with no success.');
-        }
-      }),
-      catchError((error) => {
-        return throwError(() => error);
-      })
-    );
+  async createGroup(data: CreateGroupData): Promise<FunctionResponse> {
+    const callable = httpsCallableData<CreateGroupData, FunctionResponse>(this.functions, 'createGroup');
+    const result = await firstValueFrom(callable(data));
+    return result;
+  }
+
+  async joinGroup(groupId:string):Promise<FunctionResponse>{
+    const callable=httpsCallableData<{groupId:string}, FunctionResponse>(this.functions, 'joinGroup');
+    const result=await firstValueFrom(callable({groupId}))
+    return result
+  }
+
+  async leaveGroup(groupId: string): Promise<FunctionResponse> {
+    const callable = httpsCallableData<{ groupId: string }, FunctionResponse>(this.functions, 'leaveGroup');
+    const result = await firstValueFrom(callable({ groupId }));
+    return result;
   }
 
   async deleteGroup(groupId: string): Promise<FunctionResponse> {
@@ -113,8 +133,8 @@ export class GroupsService {
     return result;
   }
 
-   async editGroup(data:Group): Promise<FunctionResponse> {
-    const callable = httpsCallableData<Group, FunctionResponse>(this.functions, 'editGroup');
+   async editGroup(data:EditGroupData): Promise<FunctionResponse> {
+    const callable = httpsCallableData<EditGroupData, FunctionResponse>(this.functions, 'editGroup');
     const result = await firstValueFrom(callable(data));
     return result;
   }

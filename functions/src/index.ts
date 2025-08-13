@@ -1,5 +1,4 @@
-// firebase/functions/src/index.ts
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 
 admin.initializeApp();
@@ -26,6 +25,7 @@ interface CreatePostData {
   title: string;
   content: string;
   imageUrl?: string;
+  creatorName:string;
 }
 
 interface CreatePostResponse {
@@ -37,6 +37,7 @@ interface CreatePostResponse {
 interface PostCommentData {
   postId: string;
   text: string;
+  creatorName:string
 }
 
 interface PostCommentResponse {
@@ -73,127 +74,193 @@ interface EditProfileData {
 }
 
 
-exports.joinGroup = functions.https.onCall( async (request: functions.https.CallableRequest<{ groupId: string }>) => {
+exports.joinGroup = functions.https.onCall(
+  {region: 'europe-west1'},
+  async (request: functions.https.CallableRequest<{ groupId: string }>) => {
     const userId = request.auth?.uid;
     const { groupId } = request.data; 
-
-  // 1. Check for authentication and required data
-  if (!userId) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'User must be authenticated to join a group.'
-    );
-  }
-
-  if (!groupId || typeof groupId !== 'string') {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      'The function must be called with a valid groupId.'
-    );
-  }
-
-  const groupRef = firestore.collection('groups').doc(groupId);
-  const userRef = firestore.collection('users').doc(userId);
-
-  try {
-    await firestore.runTransaction(async (transaction) => {
-      // 2. Read the current state of the documents
-      const groupDoc = await transaction.get(groupRef);
-      const userDoc = await transaction.get(userRef);
-
-      if (!groupDoc.exists) {
-        throw new functions.https.HttpsError('not-found', 'Group not found.');
-      }
-      if (!userDoc.exists) {
-        throw new functions.https.HttpsError('not-found', 'User profile not found.');
-      }
-
-      const groupData = groupDoc.data();
-
-      // 3. Check if the user is already a member
-      if (groupData?.memberCount && groupData.memberCount.includes(userId)) {
-        throw new functions.https.HttpsError(
-          'already-exists',
-          'User is already a member of this group.'
-        );
-      }
-
-      // 4. Update the documents using the transaction
-      const updatedGroupData = {
-        memberCount: admin.firestore.FieldValue.arrayUnion(userId),
-        memberCountValue: admin.firestore.FieldValue.increment(1),
-      };
-      const updatedUserData = {
-        groups: admin.firestore.FieldValue.arrayUnion(groupId),
-      };
-
-      transaction.update(groupRef, updatedGroupData);
-      transaction.update(userRef, updatedUserData);
-    });
-
-    return { success: true };
-  } catch (error) {
-    if (error instanceof functions.https.HttpsError) {
-      throw error;
-    }
-    throw new functions.https.HttpsError('internal', 'Transaction failed.', error);
-  }
-});
-
-exports.createGroup = functions.https.onCall(
- async (request: functions.https.CallableRequest<CreateGroupData>): Promise<CreateGroupResponse> => {
-    const { name, description, tags, logoImgUrl, bannerImgUrl, rules } = request.data;
-
-    const userId = request.auth?.uid;
 
     if (!userId) {
       throw new functions.https.HttpsError(
         'unauthenticated',
-        'User must be authenticated to create a group.'
+        'User must be authenticated to join a group.'
       );
     }
 
-    if (!name || typeof name !== 'string' || name.length < 4) {
+    if (!groupId || typeof groupId !== 'string') {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'Group name is required and must be at least 4 characters.'
+        'The function must be called with a valid groupId.'
       );
+    }
+
+    const groupRef = firestore.collection('groups').doc(groupId);
+    const userRef = firestore.collection('users').doc(userId);
+
+    try {
+      await firestore.runTransaction(async (transaction) => {
+        const groupDoc = await transaction.get(groupRef);
+        const userDoc = await transaction.get(userRef);
+
+        if (!groupDoc.exists) {
+          throw new functions.https.HttpsError('not-found', 'Group not found.');
+        }
+        if (!userDoc.exists) {
+          throw new functions.https.HttpsError('not-found', 'User profile not found.');
+        }
+
+        const groupData = groupDoc.data();
+
+
+        if (groupData?.members && groupData.members.includes(userId)) {
+          throw new functions.https.HttpsError(
+            'already-exists',
+            'User is already a member of this group.'
+          );
+        }
+
+        const updatedGroupData = {
+          members: admin.firestore.FieldValue.arrayUnion(userId),
+          memberCount: admin.firestore.FieldValue.increment(1),
+        };
+        const updatedUserData = {
+          groups: admin.firestore.FieldValue.arrayUnion(groupId),
+        };
+
+        transaction.update(groupRef, updatedGroupData);
+        transaction.update(userRef, updatedUserData);
+      });
+
+      return { success: true };
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      throw new functions.https.HttpsError('internal', 'Transaction failed.', error);
+    }
+  }
+);
+
+exports.leaveGroup = functions.https.onCall(
+  {region: 'europe-west1'},
+  async (request: functions.https.CallableRequest<{ groupId: string }>) => {
+    const userId = request.auth?.uid;
+    const { groupId } = request.data; 
+
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated to leave a group.'
+      );
+    }
+
+    if (!groupId || typeof groupId !== 'string') {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'The function must be called with a valid groupId.'
+      );
+    }
+
+    const groupRef = firestore.collection('groups').doc(groupId);
+    const userRef = firestore.collection('users').doc(userId);
+
+    try {
+      // 3. Firestore Transaction for Atomicity
+      await firestore.runTransaction(async (transaction) => {
+        const groupDoc = await transaction.get(groupRef);
+        const userDoc = await transaction.get(userRef);
+
+        // Check if documents exist
+        if (!groupDoc.exists) {
+          throw new functions.https.HttpsError('not-found', 'Group not found.');
+        }
+        if (!userDoc.exists) {
+          // This should ideally not happen if the user is authenticated,
+          // but it's a good safety check.
+          throw new functions.https.HttpsError('not-found', 'User profile not found.');
+        }
+
+        const groupData = groupDoc.data();
+
+        // 4. Check if User is a Member
+        // Ensure 'members' field exists and contains the userId
+        if (!groupData?.members || !groupData.members.includes(userId)) {
+          throw new functions.https.HttpsError(
+            'failed-precondition', // Use failed-precondition as user is not a member
+            'User is not a member of this group.'
+          );
+        }
+
+        // 5. Update Group Document
+        // Remove user from 'members' array and decrement 'memberCount'
+        const updatedGroupData = {
+          members: admin.firestore.FieldValue.arrayRemove(userId),
+          memberCount: admin.firestore.FieldValue.increment(-1),
+        };
+        transaction.update(groupRef, updatedGroupData);
+
+        // 6. Update User Document
+        // Remove group ID from user's 'groups' array
+        const updatedUserData = {
+          groups: admin.firestore.FieldValue.arrayRemove(groupId),
+        };
+        transaction.update(userRef, updatedUserData);
+      });
+
+      // 7. Return Success
+      return { success: true };
+    } catch (error: any) {
+      // 8. Error Handling
+      console.error('Error leaving group:', error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      // Re-throw as a generic internal error if not already an HttpsError
+      throw new functions.https.HttpsError('internal', 'Failed to leave group.');
+    }
+  }
+);
+
+exports.createGroup = functions.https.onCall(
+  { region: 'europe-west1' },
+  async (request: functions.https.CallableRequest<CreateGroupData>): Promise<CreateGroupResponse> => {
+    
+    const { name, description, tags, logoImgUrl, bannerImgUrl, rules } = request.data;
+    const userId = request.auth?.uid;
+
+    if (!userId) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to create a group.');
+    }
+
+      if (!name || typeof name !== 'string' || name.length < 4) {
+      throw new functions.https.HttpsError('invalid-argument', 'Group name is required and must be at least 4 characters.');
     }
     if (!description || typeof description !== 'string') {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'Group description is required.'
-      );
+        throw new functions.https.HttpsError('invalid-argument', 'Group description is required.');
     }
     if (!tags || typeof tags !== 'string') {
-        throw new functions.https.HttpsError(
-          'invalid-argument',
-          'Tags are required.'
-        );
-      }
+        throw new functions.https.HttpsError('invalid-argument', 'Tags are required.');
+    }
     
     const processedTags = tags.split(' ')
-                      .map(tag => tag.trim())
-                      .filter(tag => tag.length > 0);
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
 
     if (processedTags.length < 3) {
-        throw new functions.https.HttpsError(
-            'invalid-argument',
-            'Please provide at least 3 tags.'
-        );
+      throw new functions.https.HttpsError('invalid-argument', 'Please provide at least 3 tags.');
     }
-
 
     const newGroupData: any = {
       name,
       description,
       creatorId: userId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      memberCount: [userId], 
-      memberCountValue: 1,
+      members: [userId],
+      memberCount: 1,
       tags: processedTags,
+      rules:[]
     };
-
+    
     if (logoImgUrl) {
       newGroupData.logoImgUrl = logoImgUrl;
     }
@@ -201,35 +268,32 @@ exports.createGroup = functions.https.onCall(
       newGroupData.bannerImgUrl = bannerImgUrl;
     }
     if (rules) {
-      const processedRules=rules.split('\n')
-      .map(rule=> rule.trim())
-      
+      const processedRules = rules.split('\n')
+        .map(rule => rule.trim());
       newGroupData.rules = processedRules;
     }
-
+    
     try {
       const groupRef = await firestore.collection('groups').add(newGroupData);
-
+      
       const userRef = firestore.collection('users').doc(userId);
       await userRef.update({
         groups: admin.firestore.FieldValue.arrayUnion(groupRef.id)
       });
-
+      
       return { success: true, groupId: groupRef.id };
     } catch (error: any) {
       console.error('Error creating group:', error);
-      if (error instanceof functions.https.HttpsError) {
-        return { success: false, error: error.message };
-      }
       return { success: false, error: 'Failed to create group. Internal server error.' };
     }
   }
 );
 
 exports.createPost = functions.https.onCall(
+  {region: 'europe-west1'},
   async (request: functions.https.CallableRequest<CreatePostData>): Promise<CreatePostResponse> => {
+    const { groupId, title, content, imageUrl, creatorName } = request.data;
     const userId = request.auth?.uid;
-    const { groupId, title, content, imageUrl } = request.data;
 
     if (!userId) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to create a post.');
@@ -251,8 +315,11 @@ exports.createPost = functions.https.onCall(
         title,
         content: content || null,
         imageUrl: imageUrl || null,
-        creatorId: userId,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        userId: userId,
+        creatorName:creatorName,
+        commentsCount:0,
+        likesCount:0,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
       };
 
       const postRef = await admin.firestore().collection('posts').add(newPostData);
@@ -266,9 +333,10 @@ exports.createPost = functions.https.onCall(
 );
 
 exports.postComment = functions.https.onCall(
+  {region: 'europe-west1'},
   async (request: functions.https.CallableRequest<PostCommentData>): Promise<PostCommentResponse> => {
     const userId = request.auth?.uid;
-    const { postId, text } = request.data;
+    const { postId, text, creatorName } = request.data;
 
 
     if (!userId) {
@@ -294,13 +362,18 @@ exports.postComment = functions.https.onCall(
 
 
       const newCommentData = {
-        userId: userId,
+        creatorId: userId,
         postId: postId,
         text: text.trim(),
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        creatorName:creatorName
       };
 
       const commentRef = await postRef.collection('comments').add(newCommentData);
+
+      await postRef.update({
+          commentsCount: admin.firestore.FieldValue.increment(1)
+      });
 
       return { success: true, commentId: commentRef.id };
 
@@ -316,39 +389,6 @@ exports.postComment = functions.https.onCall(
 
 // ----------------------------------------------------
 
-async function deleteDocumentsByQuery(query: admin.firestore.Query, batchSize: number, subcollectionNames: string[] = []): Promise<void> {
-  const snapshot = await query.get();
-  if (snapshot.size === 0) {
-    return;
-  }
-
-  const batch = firestore.batch();
-  for (const doc of snapshot.docs) {
-    batch.delete(doc.ref);
-
-    // Recursively delete subcollections
-    for (const subColName of subcollectionNames) {
-      await deleteCollectionRecursively(doc.ref.collection(subColName), batchSize);
-    }
-  }
-
-  await batch.commit();
-
-  // If there are more documents, process the next batch
-  if (snapshot.size === batchSize) {
-    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    const nextQuery = query.startAfter(lastDoc.data().createdAt || lastDoc); // Use a timestamp for ordered queries if possible
-    await deleteDocumentsByQuery(nextQuery, batchSize, subcollectionNames);
-  }
-}
-
-async function deleteCollectionRecursively(collectionRef: admin.firestore.CollectionReference, batchSize: number): Promise<void> {
-  const query = collectionRef.orderBy('__name__').limit(batchSize);
-  return new Promise<void>((resolve, reject) => {
-    deleteQueryBatch(query, batchSize, resolve).catch(reject);
-  });
-}
-
 async function deleteQueryBatch(query: admin.firestore.Query, batchSize:number, resolve: () => void): Promise<void> {
   const snapshot = await query.get();
   if (snapshot.size === 0) {
@@ -362,14 +402,50 @@ async function deleteQueryBatch(query: admin.firestore.Query, batchSize:number, 
 
   await batch.commit();
 
-  // Process next batch in next event loop tick
   if (snapshot.size === batchSize) {
     const lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    const nextQuery = query.startAfter(lastDoc).limit(batchSize); // Create a new query for the next batch
+    const nextQuery = query.startAfter(lastDoc).limit(batchSize); 
     process.nextTick(() => deleteQueryBatch(nextQuery, batchSize, resolve));
   } else {
-    // We've processed the last batch
     resolve();
+  }
+}
+
+async function deleteCollectionRecursively(collectionRef: admin.firestore.CollectionReference, batchSize: number): Promise<void> {
+  const query = collectionRef.orderBy('__name__').limit(batchSize);
+  return new Promise<void>((resolve, reject) => {
+    deleteQueryBatch(query, batchSize, resolve).catch(reject);
+  });
+}
+
+async function deleteDocumentsByQuery(query: admin.firestore.Query, batchSize: number, subcollectionNames: string[] = []): Promise<void> {
+  let snapshot = await query.get();
+
+  if (snapshot.size === 0) {
+    return;
+  }
+
+  const batch = firestore.batch();
+  const subcollectionDeletionPromises: Promise<void>[] = [];
+
+  for (const doc of snapshot.docs) {
+    batch.delete(doc.ref);
+
+    for (const subColName of subcollectionNames) {
+      subcollectionDeletionPromises.push(
+        deleteCollectionRecursively(doc.ref.collection(subColName), batchSize)
+      );
+    }
+  }
+
+  await batch.commit();
+
+  await Promise.all(subcollectionDeletionPromises);
+
+  if (snapshot.size === batchSize) {
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    const nextQuery = query.startAfter(lastDoc); 
+    await deleteDocumentsByQuery(nextQuery, batchSize, subcollectionNames);
   }
 }
 
@@ -389,6 +465,7 @@ function getStoragePathFromUrl(url: string): string | null {
 // ----------------------------------------------------
 
 exports.deleteGroup = functions.https.onCall(
+  {region: 'europe-west1'},
   async (request: functions.https.CallableRequest<{ groupId: string }>) => {
   const userId = request.auth?.uid;
   const { groupId } = request.data;
@@ -426,7 +503,9 @@ exports.deleteGroup = functions.https.onCall(
 });
 
 
-exports.deletePost = functions.https.onCall(async (request: functions.https.CallableRequest<{ postId: string }>) => {
+exports.deletePost = functions.https.onCall(
+  {region: 'europe-west1'},
+  async (request: functions.https.CallableRequest<{ postId: string }>) => {
   const userId = request.auth?.uid;
   const { postId } = request.data;
 
@@ -443,7 +522,7 @@ exports.deletePost = functions.https.onCall(async (request: functions.https.Call
     }
     
     const postData = postDoc.data();
-    if (postData?.creatorId !== userId) {
+    if (postData?.userId !== userId) {
       throw new functions.https.HttpsError('permission-denied', 'Only the post creator can delete the post.');
     }
 
@@ -460,7 +539,9 @@ exports.deletePost = functions.https.onCall(async (request: functions.https.Call
 });
 
 
-exports.deleteComment = functions.https.onCall(async (request: functions.https.CallableRequest<{ postId: string; commentId: string }>) => {
+exports.deleteComment = functions.https.onCall(
+  {region: 'europe-west1'},
+  async (request: functions.https.CallableRequest<{ postId: string; commentId: string }>) => {
   const userId = request.auth?.uid;
   const { postId, commentId } = request.data;
 
@@ -476,72 +557,92 @@ exports.deleteComment = functions.https.onCall(async (request: functions.https.C
   }
   
   const commentData = commentDoc.data();
-  if (commentData?.userId !== userId) {
+  if (commentData?.creatorId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Only the comment creator can delete the comment.');
   }
 
   await commentRef.delete();
 
+  const postRef = firestore.collection('posts').doc(postId);
+  await postRef.update({commentsCount: admin.firestore.FieldValue.increment(-1)});
+
   return { success: true };
 });
 
-exports.deleteUserAccount = functions.https.onCall(async (request: functions.https.CallableRequest<void>) => {
-  const userId = request.auth?.uid;
+exports.deleteUserAccount = functions.https.onCall(
+  {region: 'europe-west1'},
+  async (request: functions.https.CallableRequest<void>) => {
+    const userId = request.auth?.uid;
 
-  if (!userId) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'User must be authenticated to delete their account.'
-    );
-  }
-
-  const BATCH_SIZE = 100;
-
-  try {
-    console.log(`Deleting comments by user ${userId}...`);
-    const userCommentsQuery = firestore.collectionGroup('comments').where('userId', '==', userId);
-    await deleteDocumentsByQuery(userCommentsQuery, BATCH_SIZE); 
-
-    console.log(`Deleting posts by user ${userId}...`);
-    const userPostsQuery = firestore.collection('posts').where('creatorId', '==', userId);
-    await deleteDocumentsByQuery(userPostsQuery, BATCH_SIZE, ['comments']);
-
-    console.log(`Deleting groups by user ${userId}...`);
-    const userGroupsQuery = firestore.collection('groups').where('creatorId', '==', userId);
-    await deleteDocumentsByQuery(userGroupsQuery, BATCH_SIZE, ['posts', 'comments']);
-
-    console.log(`Cleaning up user ${userId} from group memberships...`);
-    const groupsUserIsMemberOfQuery = firestore.collection('groups').where('memberCount', 'array-contains', userId);
-    const groupsSnapshot = await groupsUserIsMemberOfQuery.get();
-    const cleanupBatch = firestore.batch();
-    groupsSnapshot.docs.forEach(doc => {
-        cleanupBatch.update(doc.ref, {
-            memberCount: admin.firestore.FieldValue.arrayRemove(userId),
-            memberCountValue: admin.firestore.FieldValue.increment(-1)
-        });
-    });
-    await cleanupBatch.commit();
-
-
-    console.log(`Deleting user document for ${userId}...`);
-    await firestore.collection('users').doc(userId).delete();
-
-    console.log(`Deleting Firebase Auth user ${userId}...`);
-    await admin.auth().deleteUser(userId);
-
-    console.log(`User ${userId} and all associated data deleted successfully.`);
-    return { success: true };
-
-  } catch (error: any) {
-    console.error('Error deleting user account and data:', error);
-    if (error instanceof functions.https.HttpsError) {
-      throw error;
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated to delete their account.'
+      );
     }
-    throw new functions.https.HttpsError('internal', 'Failed to delete user account and associated data.');
-  }
+
+    const BATCH_SIZE = 100;
+
+     try {
+      console.log(`Starting to delete user data for ${userId}...`);
+
+      console.log(`Step 1: Deleting comments by user ${userId}...`);
+      const userCommentsQuery = firestore.collectionGroup('comments')
+        .where('creatorId', '==', userId)
+        .orderBy('__name__');
+      await deleteDocumentsByQuery(userCommentsQuery, BATCH_SIZE); 
+      console.log('Step 1 complete.');
+
+      console.log(`Step 2: Deleting posts by user ${userId}...`);
+      const userPostsQuery = firestore.collection('posts')
+        .where('userId', '==', userId)
+        .orderBy('__name__');
+      await deleteDocumentsByQuery(userPostsQuery, BATCH_SIZE, ['comments']);
+      console.log('Step 2 complete.');
+
+      console.log(`Step 3: Deleting groups by user ${userId}...`);
+      const userGroupsQuery = firestore.collection('groups')
+        .where('creatorId', '==', userId)
+        .orderBy('__name__');
+      await deleteDocumentsByQuery(userGroupsQuery, BATCH_SIZE, ['posts']);
+      console.log('Step 3 complete.');
+
+      console.log(`Step 4: Cleaning up user from group memberships...`);
+      const groupsUserIsMemberOfQuery = firestore.collection('groups').where('members', 'array-contains', userId);
+      const groupsSnapshot = await groupsUserIsMemberOfQuery.get();
+      const cleanupBatch = firestore.batch();
+      groupsSnapshot.docs.forEach(doc => {
+          cleanupBatch.update(doc.ref, {
+              members: admin.firestore.FieldValue.arrayRemove(userId),
+              memberCount: admin.firestore.FieldValue.increment(-1)
+          });
+      });
+      await cleanupBatch.commit();
+      console.log('Step 4 complete.');
+
+
+      console.log(`Step 5: Deleting user document...`);
+      await firestore.collection('users').doc(userId).delete();
+      console.log('Step 5 complete.');
+
+
+      console.log(`Step 6: Deleting Firebase Auth user...`);
+      await admin.auth().deleteUser(userId);
+      console.log('Step 6 complete. All data deleted successfully.');
+
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('Error deleting user account and data:', error);
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+      throw new functions.https.HttpsError('internal', 'Failed to delete user account and associated data.');
+    }
 });
 
 exports.editGroup = functions.https.onCall(
+  {region: 'europe-west1'},
   async (request: functions.https.CallableRequest<EditGroupData>): Promise<BasicResponse> => {
     const userId = request.auth?.uid;
     const { groupId, name, description, tags, rules, newLogoImgUrl, newBannerImgUrl } = request.data;
@@ -596,8 +697,11 @@ exports.editGroup = functions.https.onCall(
       if (rules !== undefined) {
         if (typeof rules !== 'string') {
           throw new functions.https.HttpsError('invalid-argument', 'Rules must be a string.');
+        } else{
+          const processedRules = rules.split('\n')
+            .map(rule => rule.trim());
+            updatedFields.rules = processedRules;
         }
-        updatedFields.rules = rules;
       }
 
       // Handle logo image update
@@ -645,6 +749,7 @@ exports.editGroup = functions.https.onCall(
 
 
 exports.editPost = functions.https.onCall(
+  {region: 'europe-west1'},
   async (request: functions.https.CallableRequest<EditPostData>): Promise<BasicResponse> => {
     const userId = request.auth?.uid;
     const { postId, title, content, newImageUrl } = request.data;
@@ -665,7 +770,7 @@ exports.editPost = functions.https.onCall(
       }
 
       const postData = postDoc.data();
-      if (postData?.creatorId !== userId) {
+      if (postData?.userId !== userId) {
         throw new functions.https.HttpsError('permission-denied', 'Only the post creator can edit this post.');
       }
 
@@ -729,6 +834,7 @@ exports.editPost = functions.https.onCall(
 );
 
 exports.editProfile = functions.https.onCall(
+  {region: 'europe-west1'},
   async (request: functions.https.CallableRequest<EditProfileData>): Promise<BasicResponse> => {
     const userId = request.auth?.uid;
     const { username, bio } = request.data;

@@ -1,15 +1,19 @@
 @if (combined$ | async; as data) {
   <div class="group-info  max-w-[1050px] mx-auto overflow-hidden pb-10">
-    <div class="banner min-h-[130px] bg-gray-200">
+    <div class="banner max-h-[130px]">
       @if (data.group?.bannerImgUrl) {
-        <img [src]="data.group?.bannerImgUrl" alt="Group Banner" class="w-full h-full object-cover">
+        <img [src]="data.group?.bannerImgUrl" alt="group-banner" class="w-full  max-h-[130px] object-cover object-center">
+      }@else {
+        <img src="groupBanner.jpg" alt="group-banner" class="w-full  max-h-[130px] object-cover object-center">
       }
     </div>
     <div class="info flex justify-between px-4 py-1">
       <div class="left flex gap-3 items-center">
-        <div class="img-holder size-16 rounded-full bg-[blue] border-2 border-white overflow-hidden">
+        <div class="img-holder size-16 rounded-full border-2 border-white overflow-hidden">
           @if (data.group?.logoImgUrl) {
-            <img [src]="data.group?.logoImgUrl" alt="Group Logo" class="w-full h-full object-cover">
+            <img [src]="data.group?.logoImgUrl" alt="group-logo" class="w-full h-full object-cover">
+          }@else{
+            <img src="group.png" alt="group-logo" class="w-full h-full object-cover">
           }
         </div>
         <h1 class="self-end text-2xl ">{{data.group?.name | transformName}}</h1>
@@ -19,17 +23,19 @@
           <button (click)="openSnackBar('Please login first to create a post')" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create post</button>
           <button (click)="openSnackBar('Please login first to join a group')" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
         } @else {
-          <a routerLink="create-post" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create post</a>
           @if (joined) {
+            <a routerLink="create-post" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create post</a>
             @if (data.group?.creatorId===currentUser()?.id) {
               <button (click)="editPage(data.group?.id)" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Edit</button>
               <button (click)="deleteGroup(data.group!.id)" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Delete</button>
               
             }@else {
-              <button class="border-[#76a7a4] bg-[#fcf1d9] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#fdecc6] active:bg-[#fae4b5]">Joined</button>
+              
+              <button (click)="leaveGroup(data.group!.id)" class="border-[#76a7a4] bg-[#fcf1d9] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#fdecc6] active:bg-[#fae4b5]">Joined</button>
             }
           }@else {
-            <button (click)="groupService.joinGroup(data.group!.id)" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
+            <button (click)="openSnackBar('Please join the group first')" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create post</button>
+            <button (click)="joinGroup(data.group!.id)" class="bg-[#76a7a4] text-white font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:bg-[#6c9896] active:bg-[#628987]">Join</button>
           }
         }
       </div>
@@ -52,7 +58,7 @@
       </div>
       <div class="tags relative line mb-3">
         <p class="pb-1 font-semibold">Group tags:</p>
-        <div class="tags-container flex gap-2">
+        <div class="tags-container flex gap-2 flex-wrap">
           @for (tag of data.group?.tags; track $index) {
             <span class="bg-[#4d6c6a1a] rounded-full px-1">{{tag}}</span>
           }

@@ -24,9 +24,7 @@ export class CommentsService {
       `posts/${trimmedPostId}/comments`
     ) as CollectionReference<Comment>;
 
-    return collectionData<Comment>(commentsSubCollRef, { idField: 'id' }).pipe(
-      take(1)
-    );
+    return collectionData<Comment>(commentsSubCollRef, { idField: 'id' })
   }
 
   async deleteComment(postId: string, commentId: string): Promise<{ success: boolean; error?: string }> {

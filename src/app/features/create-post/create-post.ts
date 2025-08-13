@@ -3,6 +3,7 @@ import {
   FormBuilderService,
   GroupsService,
   PostsService,
+  UserService,
 } from '../../core/services';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ImageUploadService } from '../../core/services/imageUpload.service';
@@ -27,6 +28,7 @@ export class CreatePost implements OnInit, OnDestroy {
   private postService = inject(PostsService);
   private subscriptions!: Subscription;
   private navigateRouter = inject(Router);
+  private userService=inject(UserService)
 
   selectedFile: File | null = null;
   selectedImagePreview: string | ArrayBuffer | null = null;
@@ -35,6 +37,7 @@ export class CreatePost implements OnInit, OnDestroy {
   groupDetails$!: Observable<Group | undefined>;
   postForm: FormGroup;
 
+  currentUser=this.userService.userProfile
   groupName = this.router.snapshot.paramMap.get('name');
 
   constructor() {
@@ -109,17 +112,14 @@ export class CreatePost implements OnInit, OnDestroy {
           content: formData.content,
           imageUrl: imageUrl,
           groupId: groupId,
+          creatorName:this.currentUser()?.username,
         };
 
-        const createPostCallable = httpsCallable<any, any>(
-          this.functions,
-          'createPost'
-        );
-        const result = await createPostCallable(dataToSend);
+        const result=await this.postService.createPost(dataToSend)
 
-        if (result.data.success) {
-        } else {
-          throw new Error('Failed to create post:', result.data.error);
+
+        if (result.success) {
+          this.navigateRouter.navigate(['/group', this.groupName])
         }
       } catch (error) {
         console.error('Error during post creation process:', error);
@@ -151,16 +151,11 @@ export class CreatePost implements OnInit, OnDestroy {
           newImageUrl: newImageUrl,
         };
 
-        const editPostCallable = httpsCallable<any, any>(
-          this.functions,
-          'editPost'
-        );
-        const result = await editPostCallable(editData);
+        const resultEdit=await this.postService.editPost(editData)
 
-        if (result.data.success) {
+
+        if (resultEdit.success) {
           this.navigateRouter.navigate(['/group', this.groupName]);
-        } else {
-          throw new Error(`Failed to update post: ${result.data.error}`);
         }
       } catch (error) {
         console.error('Error during post edit process:', error);
