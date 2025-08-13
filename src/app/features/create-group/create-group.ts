@@ -52,7 +52,7 @@ export class CreateGroup {
 
   async onSubmit():Promise<void>{
     if (!this.groupForm.valid) {
-      this.groupForm.markAllAsTouched()
+      this.formBuilderService.markFormGroupTouched(this.groupForm)
       return;
     }
 

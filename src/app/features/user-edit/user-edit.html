@@ -1,0 +1,38 @@
+<div class="flex h-screen items-center justify-center ">
+  <div class="mx-auto w-full max-w-md rounded-lg bg-[#eae4d9] px-6 py-10 shadow-lg">
+    <div class="mb-8 text-center">
+      <h2 class="text-3xl font-bold text-[#3d3a33]">Create your post</h2>
+    </div>
+    <form class="login space-y-6" [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+      <div class="field">
+        <label for="title" class="text-[#3d3a33]">Title</label>
+        <input
+          [class.border-red]="isUsernameInvalid"
+          type="text"
+          id="title"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+          formControlName="title"
+        />
+      </div>
+      @if (isUsernameInvalid) {
+      <p class="text-[#FF0000]">{{usernameErrrorMessage}}</p>
+      }
+
+      <div class="filed">
+        <label for="content" class="text-[#3d3a33]">Bio<span class="text-xs opacity-60">(optional)</span></label>
+        <textarea 
+        id="Bio" 
+        class="resize-none block w-full rounded-md border border-gray-300 bg-gray-50 py-3 pl-5 pr-3 text-gray-900 focus:border-[#76a7a4] focus:ring-[#76a7a4]"
+        formControlName="Bio"></textarea>
+      </div>
+
+      <button
+      type="submit"
+      [disabled]="!userForm.valid"
+        class="w-full rounded-md bg-[#76a7a4] py-2 text-lg font-semibold text-white transition-colors duration-200 hover:bg-[#5b8a87] focus:outline-none focus:ring-4 focus:ring-[#76a7a4] focus:ring-opacity-50"
+        >
+        Edit
+      </button>
+    </form>
+  </div>

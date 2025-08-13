@@ -35,7 +35,8 @@ export class UserService {
                   posts: (profile as any).posts || [],
                   comments: (profile as any).comments || [],
                   likedPosts: (profile as any).likedPosts || [],
-                  dislikedPosts: (profile as any).dislikedPosts || []
+                  dislikedPosts: (profile as any).dislikedPosts || [],
+                  bio:(profile as any).bio
                 };
                 this._userProfile.set(userModel);
             })

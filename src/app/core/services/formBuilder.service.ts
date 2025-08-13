@@ -20,7 +20,7 @@ export class FormBuilderService {
       //register
       case 1:
         form = this.formBuilder.group({
-          username: ['', [Validators.required, Validators.minLength(5)]],
+          username: ['', [Validators.required, Validators.minLength(4)]],
           email: [
             '',
             [
@@ -66,16 +66,8 @@ export class FormBuilderService {
       case 3:
         //profile-edit
         form = this.formBuilder.group({
-          username: ['', [Validators.required, Validators.minLength(5)]],
-          email: [
-            '',
-            [
-              Validators.required,
-              Validators.pattern(
-                /^[a-zA-Z0-9_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-              ),
-            ],
-          ],
+          username: ['', [Validators.required, Validators.minLength(4)]],
+          bio: [''],
         });
         break;
 
@@ -232,7 +224,7 @@ export class FormBuilderService {
       return 'Username is required';
     }
     if (control?.errors?.['minlength']) {
-      return 'Username should have at least 5 symbols!';
+      return 'Username should have at least 4 symbols!';
     }
     return '';
   }

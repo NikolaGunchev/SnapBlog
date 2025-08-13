@@ -1,0 +1,11 @@
+.user-header::After{
+  content: "";
+  display: block;
+  position: absolute;
+  padding: 0;
+  width: 100%;
+  height: 3px;
+  left: 0;
+  bottom: -0.5rem;
+  background-color: #dfcda674;
+}

@@ -1,7 +1,7 @@
 <header class="main-background-color py-2 px-6 shadow-md border-b-2 border-[#fff4e1]">
     <div class="mx-auto flex justify-between items-center space-x-4">
         <div class="flex-shrink-0">
-            <a routerLink=""><img src="logo.png" alt="logo" class="h-8 rounded-lg"></a>
+            <a routerLink="/"><img src="logo.png" alt="logo" class="h-8 rounded-lg"></a>
         </div>
 
         <div class="search-field flex-grow flex items-center justify-center max-w-xl min-w-[150px] sm:min-w-[200px] md:min-w-[300px] relative">
@@ -28,16 +28,18 @@
               <a routerLink="create-group" class="border-[#76a7a4] font-medium py-1.5 px-6 rounded-full transition-colors duration-200 shadow-md hover:text-white hover:bg-[#6c9896] active:bg-[#628987]">Create Group</a>
               <div class="user-info relative flex gap-1 items-center">
                 <p class="text-gray-700 font-medium whitespace-nowrap">{{ currentUser()?.username }}</p>
-                <a routerLink="/group/userprofile"
+                <div
                 (mouseenter)="openMenu()"
                 (mouseleave)="closeMenu()">
-                    <div class="img-holder size-9 rounded-full bg-[red]">g</div>
-                </a>
+                    <div class="img-holder size-9 rounded-full">
+                        <img src="profile-logo.png" alt="profile logo" class="w-full h-full object-cover">
+                    </div>
+                  </div>
                 @if(showMenu){
                   <div class="profile-menu flex flex-col absolute bottom-[-5rem] right-0 bg-[#fcf1d9] rounded-lg shadow-md"
                     (mouseenter)="cancelClose()"
                     (mouseleave)="closeMenu()">
-                    <a class="p-2 min-w-fit hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 whitespace-nowrap">View Profile</a>
+                    <a routerLink="/user-profile/{{currentUser()?.id}}" class="p-2 min-w-fit hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 whitespace-nowrap">View Profile</a>
                     <a (click)="logout()" class="p-2 hover:bg-[#ffeabd] rounded-sm transition-colors duration-150 cursor-pointer">Logout</a>
                   </div>
                 }

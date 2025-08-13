@@ -54,7 +54,7 @@ export class CreatePost {
 
   async onSubmit(): Promise<void> {
     if (this.postForm.invalid) {
-      this.postForm.markAllAsTouched();
+      this.formBuilderService.markFormGroupTouched(this.postForm)
       throw new Error('Form is invalid.')
     }
 

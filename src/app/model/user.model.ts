@@ -10,4 +10,5 @@ export interface User{
   comments:string[],
   likedPosts:string[]
   dislikedPosts:string[]
+  bio:string
 }
