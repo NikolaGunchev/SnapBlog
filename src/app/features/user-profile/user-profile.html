@@ -24,6 +24,12 @@
           <p class="opacity-70">Write something about yourself...</p>
         }
       </div>
+      <h2 class="my-3 text-2xl">Post overview</h2>
+      <div class="post-overview">
+        @for (post of posts$ | async; track $index) {
+          <app-post-item [post]="post"></app-post-item>
+        }
+      </div>
     </div>
     <div
       class="side-content col-span-12 lg:col-span-4 flex flex-col gap-6 min-h-screen mt-[100px]"

@@ -9,7 +9,7 @@ import {
   UserCredential,
 } from '@angular/fire/auth';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { from, Observable, tap } from 'rxjs';
+import { from, map, Observable, switchMap } from 'rxjs';
 import { doc, Firestore, serverTimestamp, setDoc } from '@angular/fire/firestore';
 
 @Injectable({
@@ -34,8 +34,9 @@ export class AuthenticationService {
     return from(
       createUserWithEmailAndPassword(this.auth, email, password)
     ).pipe(
-      tap((userCredential) => {
+      switchMap(userCredential =>{
         const uid = userCredential.user.uid;
+        const userDocRef = doc(this.firestore, `users/${uid}`);
 
         const user = {
           id: uid,
@@ -50,8 +51,9 @@ export class AuthenticationService {
           bio:''
         };
 
-        const userDocRef = doc(this.firestore, `users/${uid}`);
-        setDoc(userDocRef, user);
+        return from(setDoc(userDocRef, user)).pipe(
+          map(() => userCredential)
+        )
       })
     );
   }

@@ -4,13 +4,12 @@ import { Post } from '../../model';
 import { Observable } from 'rxjs';
 import { PostItem } from '../post-item/post-item';
 import { CommonModule } from '@angular/common';
-import { Dropdown } from '../../shared/dropdown/dropdown';
 import { SideGroup } from '../side-group/side-group';
 import { Footer } from '../../shared/footer/footer';
 
 @Component({
   selector: 'app-home',
-  imports: [PostItem, CommonModule, Dropdown, SideGroup, Footer],
+  imports: [PostItem, CommonModule, SideGroup, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

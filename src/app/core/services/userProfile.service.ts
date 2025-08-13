@@ -24,39 +24,45 @@ export class UserService {
 
   public userProfile = this._userProfile.asReadonly();
 
- constructor() {
+  constructor() {
     const user$ = toObservable(this.authService.currentUser);
     
     user$.pipe(
       switchMap((firebaseUser) => {
         if (firebaseUser) {
-          const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-          return docData(userDocRef).pipe(
-            tap((profile) => {
-                const userModel: User = {
-                  id: firebaseUser.uid,
-                  email: firebaseUser.email || '',
-                  username: (profile as any).username,
-                  created_at: (profile as any).created_at.toDate(),
-                  groups: (profile as any).groups || [],
-                  posts: (profile as any).posts || [],
-                  comments: (profile as any).comments || [],
-                  likedPosts: (profile as any).likedPosts || [],
-                  dislikedPosts: (profile as any).dislikedPosts || [],
-                  bio:(profile as any).bio
-                };
-                this._userProfile.set(userModel);
-            })
-          );
+          return this.fetchUserProfile(firebaseUser.uid);
         } else {
-          return of(null).pipe(
-            tap(() => {
-              this._userProfile.set(null);
-            })
-          );
+          this._userProfile.set(null);
+          return of(null);
         }
       })
     ).subscribe();
+  }
+
+  public fetchUserProfile(uid: string): Observable<User | null> {
+    const userDocRef = doc(this.firestore, `users/${uid}`);
+    return docData(userDocRef).pipe(
+      tap((profileData: any) => {
+        if (profileData && profileData.username) {
+          const userModel: User = {
+            id: uid,
+            email: profileData.email || '',
+            username: profileData.username,
+            created_at: profileData.created_at.toDate(),
+            groups: profileData.groups || [],
+            posts: profileData.posts || [],
+            comments: profileData.comments || [],
+            likedPosts: profileData.likedPosts || [],
+            dislikedPosts: profileData.dislikedPosts || [],
+            bio: profileData.bio || ''
+          };
+          this._userProfile.set(userModel);
+        } else {
+          this._userProfile.set(null);
+        }
+      }),
+      map(profile => profile as User | null)
+    );
   }
 
   getUserById(userId: string): Observable<User | undefined> {

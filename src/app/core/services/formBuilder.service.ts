@@ -36,7 +36,7 @@ export class FormBuilderService {
                 '',
                 [
                   Validators.required,
-                  Validators.minLength(5),
+                  Validators.minLength(6),
                   Validators.pattern(/^[a-zA-Z0-9]+$/),
                 ],
               ],
@@ -249,7 +249,7 @@ export class FormBuilderService {
       return 'Password is required';
     }
     if (control?.errors?.['minlength']) {
-      return 'Password should be at least 5 characters!';
+      return 'Password should be at least 6 characters!';
     }
     if (control?.errors?.['pattern']) {
       return 'Password should contain only English letters and digits!';

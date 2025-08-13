@@ -3,7 +3,6 @@
   class="container mx-auto px-4 py-3 max-w-[1050px] grid grid-cols-1 lg:grid-cols-12 gap-6 relative"
 >
   <div class="post-cotnainer col-span-12 lg:col-span-8">
-    <app-dropdown></app-dropdown>
     @for (post of homePosts; track $index) {
     <app-post-item [post]="post"></app-post-item>
     }

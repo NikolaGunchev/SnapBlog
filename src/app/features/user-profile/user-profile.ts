@@ -1,23 +1,32 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Footer } from '../../shared/footer/footer';
-import { AuthenticationService, UserService } from '../../core/services';
+import { AuthenticationService, PostsService, UserService } from '../../core/services';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago-pipe';
 import { MenuIcons } from '../../shared/menu-icons/menu-icons';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { Post } from '../../model';
+import { PostItem } from '../post-item/post-item';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-user-profile',
-  imports: [Footer, TimeAgoPipe, MenuIcons],
+  imports: [Footer, TimeAgoPipe, MenuIcons, PostItem, CommonModule],
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.css',
 })
-export class UserProfile {
+export class UserProfile implements OnInit {
   private userService = inject(UserService);
   private navigateRoute=inject(Router)
   private authService=inject(AuthenticationService)
-
+  private postService=inject(PostsService)
+  
   currentUser = this.userService.userProfile;
+  posts$!:Observable<Post[]>
+  
+  ngOnInit(): void {
+    this.posts$=this.postService.getPostsByUser(this.currentUser()!.id)
+  }
 
   handleEditClicked(): void {
     this.navigateRoute.navigate([`user-edit/${this.currentUser()?.id}`])
